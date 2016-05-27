@@ -1014,10 +1014,6 @@ public class TextEditor extends javax.swing.JFrame {
         tabb.setTabComponentAt(i - 1, pnlTab);
         codeEditor.setText(code);
     }
-
-    public void testgit(){
-    
-    }
     
     public void open() {
         File fileToOpen = null;
