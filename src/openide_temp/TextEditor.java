@@ -1121,6 +1121,11 @@ public class TextEditor extends javax.swing.JFrame {
         return curDir;
     }
 
+   
+    public void gitCommit(){
+    
+    }
+    
     public void addProjectTree() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Choose the project folder: ");
