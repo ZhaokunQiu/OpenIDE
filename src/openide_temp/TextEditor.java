@@ -1015,6 +1015,10 @@ public class TextEditor extends javax.swing.JFrame {
         codeEditor.setText(code);
     }
 
+    public void testgit(){
+    
+    }
+    
     public void open() {
         File fileToOpen = null;
         JFileChooser fileChooser = new JFileChooser();
