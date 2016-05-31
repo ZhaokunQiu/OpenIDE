@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -984,10 +985,10 @@ public class TextEditor extends javax.swing.JFrame {
 
         });
         GridBagConstraints gbc = new GridBagConstraints();
+        JLabel loc = new JLabel("Location: ");
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 1;
-
+        
         pnlTab.add(title, gbc);
         gbc.gridx++;
         JLabel path = new JLabel(fileToOpen.getAbsolutePath());
@@ -1158,18 +1159,20 @@ public class TextEditor extends javax.swing.JFrame {
     private void runConfiguration() {
         System.out.println("Runing run config..");
         JDialog runConfigDialog = new JDialog();
-        Dimension dim = new Dimension(400, 190);
-        runConfigDialog.setMaximumSize(dim);
+        Dimension dim = new Dimension(350, 380);
+        Dimension dimPre = new Dimension(700, 700);
+        //runConfigDialog.setMaximumSize(dim);
         runConfigDialog.setMinimumSize(dim);
-        runConfigDialog.setPreferredSize(dim);
-
+        runConfigDialog.setPreferredSize(dimPre);
+        runConfigDialog.setTitle("Debug Configuration");
         JPanel runConfigPanel = new JPanel();
         JTextField args = new JTextField();
         JScrollPane scrolBar = new JScrollPane();
-        BoxLayout bx = new BoxLayout(runConfigPanel,BoxLayout.Y_AXIS);
-        runConfigPanel.setLayout(new BoxLayout(runConfigPanel, BoxLayout.Y_AXIS));
+        //BoxLayout bx = new BoxLayout(runConfigPanel,BoxLayout.Y_AXIS);
+        runConfigPanel.setLayout(new GridBagLayout());
         runConfigDialog.add(runConfigPanel);
         JLabel project = new JLabel("Project Location: ");
+        JLabel arg = new JLabel("Arguments: ");
         JComboBox projectLoc = new JComboBox();
         projectLoc.addItem("select a project..");
         for (int i = 0; i < projectExes.size(); i++) {
@@ -1254,12 +1257,31 @@ public class TextEditor extends javax.swing.JFrame {
             }
 
         });
-
-        runConfigPanel.add(project);
-        runConfigPanel.add(projectLoc);
-        runConfigPanel.add(scrolBar);
-        runConfigPanel.add(args);
-        runConfigPanel.add(submit);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5,5,5,5);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        runConfigPanel.add(project,gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        runConfigPanel.add(projectLoc,gbc);
+        gbc.gridx =0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        runConfigPanel.add(scrolBar,gbc);
+        gbc.gridx =0;
+        gbc.gridy = 2;
+        runConfigPanel.add(arg,gbc);
+        gbc.gridx =1;
+        gbc.gridy = 2;
+        //gbc.weightx = 1;
+        //gbc.weighty = 1;
+        runConfigPanel.add(args,gbc);
+        gbc.gridx =0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        runConfigPanel.add(submit,gbc);
         runConfigDialog.setVisible(true);
 
     }
