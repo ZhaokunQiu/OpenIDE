@@ -728,7 +728,9 @@ public class TextEditor extends javax.swing.JFrame {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    output = comand.ExecuteCC("cc", filePathTemp, "-o", outtemp, "-g");
+                    String arr[] = {"cc",filePathTemp,"-o",outtemp,"-g"};
+                    //output = comand.ExecuteCC("cc", filePathTemp, "-o", outtemp, "-g");
+                    output = comand.Execute(arr);
                     if (output.equals("")) {
                         statusMsg.setText("Status: Code compile without any errors.");
                     } else {
@@ -836,7 +838,8 @@ public class TextEditor extends javax.swing.JFrame {
                         Thread t = new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                comand.ExecuteMake("xterm", "-hold", "-e", "sh", "/home/castor/Desktop/scriptMake.sh");
+                                String arr[] = {"xterm","-hold","-e","sh","/home/castor/Desktop/scriptMake.sh"};
+                                comand.Execute(arr);
                             }
 
                         });
@@ -850,9 +853,7 @@ public class TextEditor extends javax.swing.JFrame {
             }
 
         } else {
-            System.out.println("Not a make file!");
             compile();
-            System.out.println("Not compiled yet..");
             if (isCompiled) {
                 System.out.println("is compiled");
                 Thread t1 = new Thread(new Runnable() {
