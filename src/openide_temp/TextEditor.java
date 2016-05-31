@@ -729,7 +729,6 @@ public class TextEditor extends javax.swing.JFrame {
                 @Override
                 public void run() {
                     String arr[] = {"cc",filePathTemp,"-o",outtemp,"-g"};
-                    //output = comand.ExecuteCC("cc", filePathTemp, "-o", outtemp, "-g");
                     output = comand.Execute(arr);
                     if (output.equals("")) {
                         statusMsg.setText("Status: Code compile without any errors.");
@@ -859,23 +858,8 @@ public class TextEditor extends javax.swing.JFrame {
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String parameters = "";
-                        parameters = parameter.getText();
-                        StringTokenizer st1 = new StringTokenizer(parameters);
-                        int count = st1.countTokens();
-                        count += 4;
-                        String[] ar = new String[count];
-                        ar[0] = "xterm";
-                        ar[1] = "-hold";
-                        ar[2] = "-e";
-                        ar[3] = exceFile;
-                        int i = 4;
-                        while (st1.hasMoreTokens()) {
-                            ar[i] = st1.nextToken();
-                            i++;
-                        }
-                        comand.Execute(ar);
-
+                        String arr[] = {"xterm","-hold","-e",exceFile};
+                        comand.Execute(arr);
                     }
                 });
                 t1.start();
@@ -1237,8 +1221,6 @@ public class TextEditor extends javax.swing.JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Add here code...");
-                //call run function
-
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -1307,9 +1289,6 @@ public class TextEditor extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(TextEditor.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new TextEditor().setVisible(true);
