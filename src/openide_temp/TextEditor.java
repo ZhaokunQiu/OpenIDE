@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -728,7 +729,8 @@ public class TextEditor extends javax.swing.JFrame {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    output = comand.ExecuteCC("cc", filePathTemp, "-o", outtemp, "-g");
+                    String arr[] = {"cc",filePathTemp,"-o",outtemp,"-g"};
+                    output = comand.Execute(arr);
                     if (output.equals("")) {
                         statusMsg.setText("Status: Code compile without any errors.");
                     } else {
@@ -836,7 +838,8 @@ public class TextEditor extends javax.swing.JFrame {
                         Thread t = new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                comand.ExecuteMake("xterm", "-hold", "-e", "sh", "/home/castor/Desktop/scriptMake.sh");
+                                String arr[] = {"xterm","-hold","-e","sh","/home/castor/Desktop/scriptMake.sh"};
+                                comand.Execute(arr);
                             }
 
                         });
@@ -850,31 +853,14 @@ public class TextEditor extends javax.swing.JFrame {
             }
 
         } else {
-            System.out.println("Not a make file!");
             compile();
-            System.out.println("Not compiled yet..");
             if (isCompiled) {
                 System.out.println("is compiled");
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String parameters = "";
-                        parameters = parameter.getText();
-                        StringTokenizer st1 = new StringTokenizer(parameters);
-                        int count = st1.countTokens();
-                        count += 4;
-                        String[] ar = new String[count];
-                        ar[0] = "xterm";
-                        ar[1] = "-hold";
-                        ar[2] = "-e";
-                        ar[3] = exceFile;
-                        int i = 4;
-                        while (st1.hasMoreTokens()) {
-                            ar[i] = st1.nextToken();
-                            i++;
-                        }
-                        comand.Execute(ar);
-
+                        String arr[] = {"xterm","-hold","-e",exceFile};
+                        comand.Execute(arr);
                     }
                 });
                 t1.start();
@@ -999,10 +985,10 @@ public class TextEditor extends javax.swing.JFrame {
 
         });
         GridBagConstraints gbc = new GridBagConstraints();
+        JLabel loc = new JLabel("Location: ");
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 1;
-
+        
         pnlTab.add(title, gbc);
         gbc.gridx++;
         JLabel path = new JLabel(fileToOpen.getAbsolutePath());
@@ -1121,6 +1107,11 @@ public class TextEditor extends javax.swing.JFrame {
         return curDir;
     }
 
+   
+    public void gitCommit(){
+    
+    }
+    
     public void addProjectTree() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Choose the project folder: ");
@@ -1161,25 +1152,26 @@ public class TextEditor extends javax.swing.JFrame {
             gridBag.gridy++;
             projectDisplay.add(tree, gridBag);
             projectDisplay.revalidate();
-
         }
     }
 
     private void runConfiguration() {
         System.out.println("Runing run config..");
         JDialog runConfigDialog = new JDialog();
-        Dimension dim = new Dimension(400, 190);
-        runConfigDialog.setMaximumSize(dim);
+        Dimension dim = new Dimension(350, 380);
+        Dimension dimPre = new Dimension(700, 700);
+        //runConfigDialog.setMaximumSize(dim);
         runConfigDialog.setMinimumSize(dim);
-        runConfigDialog.setPreferredSize(dim);
-
+        runConfigDialog.setPreferredSize(dimPre);
+        runConfigDialog.setTitle("Run Configuration");
         JPanel runConfigPanel = new JPanel();
         JTextField args = new JTextField();
         JScrollPane scrolBar = new JScrollPane();
-        BoxLayout bx = new BoxLayout(runConfigPanel,BoxLayout.Y_AXIS);
-        runConfigPanel.setLayout(new BoxLayout(runConfigPanel, BoxLayout.Y_AXIS));
+        //BoxLayout bx = new BoxLayout(runConfigPanel,BoxLayout.Y_AXIS);
+        runConfigPanel.setLayout(new GridBagLayout());
         runConfigDialog.add(runConfigPanel);
         JLabel project = new JLabel("Project Location: ");
+        JLabel arg = new JLabel("Arguments: ");
         JComboBox projectLoc = new JComboBox();
         projectLoc.addItem("select a project..");
         for (int i = 0; i < projectExes.size(); i++) {
@@ -1231,8 +1223,6 @@ public class TextEditor extends javax.swing.JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Add here code...");
-                //call run function
-
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -1266,12 +1256,31 @@ public class TextEditor extends javax.swing.JFrame {
             }
 
         });
-
-        runConfigPanel.add(project);
-        runConfigPanel.add(projectLoc);
-        runConfigPanel.add(scrolBar);
-        runConfigPanel.add(args);
-        runConfigPanel.add(submit);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5,5,5,5);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        runConfigPanel.add(project,gbc);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        runConfigPanel.add(projectLoc,gbc);
+        gbc.gridx =0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        runConfigPanel.add(scrolBar,gbc);
+        gbc.gridx =0;
+        gbc.gridy = 2;
+        runConfigPanel.add(arg,gbc);
+        gbc.gridx =1;
+        gbc.gridy = 2;
+        //gbc.weightx = 1;
+        //gbc.weighty = 1;
+        runConfigPanel.add(args,gbc);
+        gbc.gridx =0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        runConfigPanel.add(submit,gbc);
         runConfigDialog.setVisible(true);
 
     }
@@ -1301,9 +1310,6 @@ public class TextEditor extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(TextEditor.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
-
-        /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new TextEditor().setVisible(true);
