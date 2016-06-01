@@ -95,7 +95,7 @@ public class Debug {
             }
         });
         scrolBar.getViewport().add(listOfExe);
-        JButton submit = new JButton("Run");
+        JButton submit = new JButton("Debug");
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

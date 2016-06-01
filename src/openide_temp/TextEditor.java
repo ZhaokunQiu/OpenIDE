@@ -134,6 +134,8 @@ public class TextEditor extends javax.swing.JFrame {
         runConfig = new JMenuItem();
         debugConfig = new JMenuItem();
         stepUp = new JButton();
+        stepDown = new JButton();
+        stop = new JButton();
 
         /* Opening a waring dialog when user tries to create a new file which is already present */
         warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
@@ -184,8 +186,6 @@ public class TextEditor extends javax.swing.JFrame {
         );
 
         /* End of warning dialog */
-      
-
         runIconButton.setText("Run");
         runIconButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -246,6 +246,40 @@ public class TextEditor extends javax.swing.JFrame {
             }
         });
 
+        stepUp.setIcon(new ImageIcon(getClass().getResource("/resources/redo1.png")));
+        stepUp.setBorderPainted(false);
+        stepUp.setFocusPainted(false);
+        stepUp.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //adding gdb next code here
+
+            }
+
+        });
+        stepDown.setIcon(new ImageIcon(getClass().getResource("/resources/undo1.png")));
+        stepDown.setBorderPainted(false);
+        stepDown.setFocusPainted(false);
+        stepDown.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //adding gdb prev code here
+
+            }
+
+        });
+        stop.setIcon(new ImageIcon(getClass().getResource("/resources/stop.png")));
+        stop.setBorderPainted(false);
+        stop.setFocusPainted(false);
+        stop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //adding gdb stop code here
+
+            }
+
+        });
+
         javax.swing.GroupLayout buttonRibbonLayout = new javax.swing.GroupLayout(buttonRibbon);
         buttonRibbon.setLayout(buttonRibbonLayout);
         buttonRibbonLayout.setHorizontalGroup(
@@ -261,6 +295,11 @@ public class TextEditor extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(compileIcon)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(stepDown)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(stepUp)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(stop)
                         .addGap(0, 415, Short.MAX_VALUE))
         );
         buttonRibbonLayout.setVerticalGroup(
@@ -268,9 +307,11 @@ public class TextEditor extends javax.swing.JFrame {
                 .addComponent(newIcon)
                 .addComponent(openIcon)
                 .addComponent(saveIcon)
-                .addGroup(buttonRibbonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(runIcon)
-                        .addComponent(compileIcon))
+                .addComponent(runIcon)
+                .addComponent(compileIcon)
+                .addComponent(stepDown)
+                .addComponent(stepUp)
+                .addComponent(stop)
         );
 
         tabb.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -1173,4 +1214,6 @@ public class TextEditor extends javax.swing.JFrame {
     private JPanel projectDisplay;
     private GridBagConstraints gridBag;
     private JButton stepUp;
+    private JButton stepDown;
+    private JButton stop;
 }
