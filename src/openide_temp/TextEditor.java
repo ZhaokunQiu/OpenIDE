@@ -63,8 +63,8 @@ public class TextEditor extends javax.swing.JFrame {
     private static ExecuteShellComand comand;
     public static int compiledIndex, mouseX, mouseY, lineNumber, selectedExeIndex;
     public static JLabel link;
-    public static ArrayList allExes;
-    public static ArrayList<ArrayList> projectExes;
+    public static ArrayList allExes, allCFiles;
+    public static ArrayList<ArrayList> projectExes,projectSources;
 
     public TextEditor() {
         try {
@@ -87,6 +87,8 @@ public class TextEditor extends javax.swing.JFrame {
         comand = new ExecuteShellComand();
         allExes = new ArrayList();
         projectExes = new ArrayList();
+        allCFiles = new ArrayList();
+        projectSources = new ArrayList();
     }
 
     @SuppressWarnings("unchecked")
@@ -102,7 +104,6 @@ public class TextEditor extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
-        parameters = new javax.swing.JDialog();
         jPanel2 = new javax.swing.JPanel();
         parameter = new javax.swing.JTextField();
         jButton3 = new javax.swing.JButton();
@@ -121,10 +122,8 @@ public class TextEditor extends javax.swing.JFrame {
         newIcon = new javax.swing.JButton();
         openIcon = new javax.swing.JButton();
         saveIcon = new javax.swing.JButton();
-        debug = new javax.swing.JButton();
         compileIcon = new javax.swing.JButton();
         runIcon = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         tabb = new javax.swing.JTabbedPane();
         menuOptions = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -151,6 +150,9 @@ public class TextEditor extends javax.swing.JFrame {
         openProject = new JMenuItem();
         projectDisplay = new JPanel();
         runConfig = new JMenuItem();
+        debugConfig = new JMenuItem();
+        stepUp = new JButton();
+        
         panel1.setName("Output"); // NOI18N
         area1.setEditable(false);
         area1.setBackground(new java.awt.Color(57, 57, 57));
@@ -262,19 +264,6 @@ public class TextEditor extends javax.swing.JFrame {
                         .addContainerGap(16, Short.MAX_VALUE))
         );
 
-        javax.swing.GroupLayout parametersLayout = new javax.swing.GroupLayout(parameters.getContentPane());
-        parameters.getContentPane().setLayout(parametersLayout);
-        parametersLayout.setHorizontalGroup(
-                parametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        parametersLayout.setVerticalGroup(
-                parametersLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(parametersLayout.createSequentialGroup()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-        );
-
         debugger.setMinimumSize(new java.awt.Dimension(484, 262));
 
         jPanel3.setMaximumSize(new java.awt.Dimension(484, 262));
@@ -381,15 +370,6 @@ public class TextEditor extends javax.swing.JFrame {
             }
         });
 
-        debug.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/debug_1.png"))); // NOI18N
-        debug.setBorderPainted(false);
-        debug.setFocusPainted(false);
-        debug.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                undoIconActionPerformed(evt);
-            }
-        });
-
         compileIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/compile1.png"))); // NOI18N
         compileIcon.setBorderPainted(false);
         compileIcon.setFocusPainted(false);
@@ -408,15 +388,6 @@ public class TextEditor extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/share-icon1.png"))); // NOI18N
-        jButton2.setBorderPainted(false);
-        jButton2.setFocusPainted(false);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                parameters.setVisible(true);
-            }
-        });
-
         javax.swing.GroupLayout buttonRibbonLayout = new javax.swing.GroupLayout(buttonRibbon);
         buttonRibbon.setLayout(buttonRibbonLayout);
         buttonRibbonLayout.setHorizontalGroup(
@@ -428,13 +399,10 @@ public class TextEditor extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(saveIcon)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(debug)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(runIcon)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(compileIcon)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)
                         .addGap(0, 415, Short.MAX_VALUE))
         );
         buttonRibbonLayout.setVerticalGroup(
@@ -443,10 +411,8 @@ public class TextEditor extends javax.swing.JFrame {
                 .addComponent(openIcon)
                 .addComponent(saveIcon)
                 .addGroup(buttonRibbonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(debug)
                         .addComponent(runIcon)
-                        .addComponent(compileIcon)
-                        .addComponent(jButton2))
+                        .addComponent(compileIcon))
         );
 
         tabb.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
@@ -476,7 +442,7 @@ public class TextEditor extends javax.swing.JFrame {
         gridBag.weighty = 1;
         gridBag.weighty = 1.0;
         gridBag.anchor = GridBagConstraints.NORTHWEST;
-        projectDisplay.add(new JTree(addNodes(null, new File("."), new ArrayList())), gridBag);
+        projectDisplay.add(new JTree(addNodes(null, new File("."), new ArrayList(), new ArrayList())), gridBag);
 
         //projectDisplay.add(new JLabel("Open Projects"));
         //projectTree.setBackground(Color.LIGHT_GRAY);
@@ -599,6 +565,8 @@ public class TextEditor extends javax.swing.JFrame {
         run.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
         run.setText("Run");
         projectMenu.add(run);
+        
+        //Adding run config
         runConfig.setText("Run Configuration");
         runConfig.addActionListener(new ActionListener() {
             @Override
@@ -608,9 +576,22 @@ public class TextEditor extends javax.swing.JFrame {
 
         });
         projectMenu.add(runConfig);
-
+        
+        //adding debug config menu
+        debugConfig.setText("Debug Configuration");
+        debugConfig.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Debug debug = new Debug(projectSources,allCFiles);
+            }
+        
+        });
+        projectMenu.add(debugConfig);
+        
         menuOptions.add(projectMenu);
-
+ 
+        
+        
         // Window menu
         window.setText("Window");
         projectWindow.setText("Project Window");
@@ -652,7 +633,6 @@ public class TextEditor extends javax.swing.JFrame {
 
     public void newFile() {
         JEditorPane codeEditor = new JEditorPane();
-        JScrollPane scroll = new JScrollPane(codeEditor);
         codeEditor.setContentType("text/java");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Location to save: ");
@@ -1016,24 +996,8 @@ public class TextEditor extends javax.swing.JFrame {
         warningDialog.setVisible(false);
     }
 
-    private void undoIconActionPerformed(java.awt.event.ActionEvent evt) {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String substring = exceFile.substring(exceFile.indexOf(".") + 1, exceFile.length());
-                String s1 = exceFile.substring(0, (exceFile.indexOf(".") - 1));
-                substring = s1 + substring;
-                String cmd[] = {"ddd", substring};
-                comand.Execute(cmd);
-            }
-
-        });
-        t.start();
-    }
-
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
         run();
-        parameters.setVisible(false);
     }
 
     private void tabbMouseDragged(java.awt.event.MouseEvent evt) {
@@ -1064,7 +1028,7 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    DefaultMutableTreeNode addNodes(DefaultMutableTreeNode curTop, File dir, ArrayList<String> tempExes) {
+    DefaultMutableTreeNode addNodes(DefaultMutableTreeNode curTop, File dir, ArrayList<String> tempExes,ArrayList<String> tempSource) {
         System.out.println("Once");
         String curPath = dir.getPath();
         DefaultMutableTreeNode curDir = new DefaultMutableTreeNode(curPath);
@@ -1081,6 +1045,9 @@ public class TextEditor extends javax.swing.JFrame {
                 tempExes.add(dir.getAbsolutePath() + "/./" + tmp[i]);
             }
 
+            if(tmp[i].endsWith(".c")){
+                tempSource.add(dir.getAbsolutePath() + "/"+tmp[i]);
+            }
             ol.addElement(tmp[i]);
         }
         Collections.sort(ol, String.CASE_INSENSITIVE_ORDER);
@@ -1096,7 +1063,7 @@ public class TextEditor extends javax.swing.JFrame {
                 newPath = curPath + File.separator + thisObject;
             }
             if ((f = new File(newPath)).isDirectory()) {
-                addNodes(curDir, f, tempExes);
+                addNodes(curDir, f, tempExes,tempSource);
             } else {
                 files.addElement(thisObject);
             }
@@ -1107,10 +1074,6 @@ public class TextEditor extends javax.swing.JFrame {
         return curDir;
     }
 
-   
-    public void gitCommit(){
-    
-    }
     
     public void addProjectTree() {
         JFileChooser fileChooser = new JFileChooser();
@@ -1120,9 +1083,12 @@ public class TextEditor extends javax.swing.JFrame {
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             File projectFolder = fileChooser.getSelectedFile();
             ArrayList<String> tempExes = new ArrayList<>();
+            ArrayList<String> tempSource = new ArrayList<>();
             tempExes.add(projectFolder.getAbsolutePath());
-            JTree tree = new JTree(addNodes(null, projectFolder, tempExes));
+            tempSource.add(projectFolder.getAbsolutePath());
+            JTree tree = new JTree(addNodes(null, projectFolder, tempExes,tempSource));
             projectExes.add(tempExes);
+            projectSources.add(tempSource);
             MouseListener ml = new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
                     System.out.println("Mouse pressed!");
@@ -1333,7 +1299,6 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JMenuItem find;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
@@ -1358,7 +1323,6 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JDialog warningDialog;
     private javax.swing.JLabel paraText;
     private javax.swing.JTextField parameter;
-    private javax.swing.JDialog parameters;
     private javax.swing.JMenuItem paste;
     private javax.swing.JMenu projectMenu;
     private javax.swing.JMenuItem redo;
@@ -1369,7 +1333,6 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JScrollPane scroll1;
     public static javax.swing.JTabbedPane tabb;
     private javax.swing.JMenuItem undo;
-    private javax.swing.JButton debug;
     private JPanel status;
     private JLabel statusMsg;
     private JScrollPane projectTree;
@@ -1377,6 +1340,8 @@ public class TextEditor extends javax.swing.JFrame {
     private JMenuItem projectWindow;
     private JMenuItem openProject;
     private JMenuItem runConfig;
+    private JMenuItem debugConfig;
     private JPanel projectDisplay;
     private GridBagConstraints gridBag;
+    private JButton stepUp;
 }
