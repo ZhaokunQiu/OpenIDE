@@ -1152,7 +1152,6 @@ public class TextEditor extends javax.swing.JFrame {
             gridBag.gridy++;
             projectDisplay.add(tree, gridBag);
             projectDisplay.revalidate();
-
         }
     }
 
@@ -1164,7 +1163,7 @@ public class TextEditor extends javax.swing.JFrame {
         //runConfigDialog.setMaximumSize(dim);
         runConfigDialog.setMinimumSize(dim);
         runConfigDialog.setPreferredSize(dimPre);
-        runConfigDialog.setTitle("Debug Configuration");
+        runConfigDialog.setTitle("Run Configuration");
         JPanel runConfigPanel = new JPanel();
         JTextField args = new JTextField();
         JScrollPane scrolBar = new JScrollPane();
