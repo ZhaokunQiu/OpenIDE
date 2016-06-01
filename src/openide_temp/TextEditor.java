@@ -98,15 +98,12 @@ public class TextEditor extends javax.swing.JFrame {
         scroll1 = new javax.swing.JScrollPane();
         area1 = new javax.swing.JTextArea();
         warningDialog = new javax.swing.JDialog();
-        jPanel1 = new javax.swing.JPanel();
-        paraText = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        warningPanel = new javax.swing.JPanel();
+        warningText = new javax.swing.JLabel();
+        warningCancelBtn = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         parameter = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
+        runIconButton = new javax.swing.JButton();
         debugger = new javax.swing.JFrame();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -172,42 +169,43 @@ public class TextEditor extends javax.swing.JFrame {
                 panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(scroll1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
         );
+    
 
         warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
 
-        jPanel1.setMaximumSize(new java.awt.Dimension(165, 97));
-        jPanel1.setMinimumSize(new java.awt.Dimension(165, 97));
+        warningPanel.setMaximumSize(new java.awt.Dimension(165, 97));
+        warningPanel.setMinimumSize(new java.awt.Dimension(165, 97));
 
-        paraText.setText("File already Exists. ");
+        warningText.setText("File already Exists. ");
 
-        jButton1.setText("Cancel");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        warningCancelBtn.setText("Cancel");
+        warningCancelBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                warningDialog.setVisible(false);
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(warningPanel);
+        warningPanel.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(jPanel1Layout.createSequentialGroup()
                                         .addGap(58, 58, 58)
-                                        .addComponent(jButton1))
+                                        .addComponent(warningCancelBtn))
                                 .addGroup(jPanel1Layout.createSequentialGroup()
                                         .addGap(25, 25, 25)
-                                        .addComponent(paraText)))
+                                        .addComponent(warningText)))
                         .addContainerGap(24, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap(15, Short.MAX_VALUE)
-                        .addComponent(paraText, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(warningText, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton1)
+                        .addComponent(warningCancelBtn)
                         .addContainerGap())
         );
 
@@ -217,27 +215,20 @@ public class TextEditor extends javax.swing.JFrame {
                 paraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, paraLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(warningPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         paraLayout.setVerticalGroup(
                 paraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(warningPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-
-        jLabel2.setText("jLabel2");
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-
-        jScrollPane1.setViewportView(jTextArea1);
-
+        
         jPanel2.setMaximumSize(new java.awt.Dimension(447, 90));
         jPanel2.setMinimumSize(new java.awt.Dimension(447, 90));
 
-        jButton3.setText("Run");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        runIconButton.setText("Run");
+        runIconButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                run();
             }
         });
 
@@ -251,7 +242,7 @@ public class TextEditor extends javax.swing.JFrame {
                         .addContainerGap())
                 .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGap(178, 178, 178)
-                        .addComponent(jButton3)
+                        .addComponent(runIconButton)
                         .addContainerGap(231, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -260,7 +251,7 @@ public class TextEditor extends javax.swing.JFrame {
                         .addContainerGap()
                         .addComponent(parameter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3)
+                        .addComponent(runIconButton)
                         .addContainerGap(16, Short.MAX_VALUE))
         );
 
@@ -992,14 +983,6 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
-        warningDialog.setVisible(false);
-    }
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
-        run();
-    }
-
     private void tabbMouseDragged(java.awt.event.MouseEvent evt) {
         mouseX = evt.getX();
         mouseY = evt.getY();
@@ -1298,22 +1281,19 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem find;
     private javax.swing.JMenu helpMenu;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton3;
+    private javax.swing.JButton warningCancelBtn;
+    private javax.swing.JButton runIconButton;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar menuOptions;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel warningPanel;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JMenuItem newFile;
     private javax.swing.JButton newIcon;
@@ -1321,7 +1301,7 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JButton openIcon;
     private javax.swing.JPanel panel1;
     private javax.swing.JDialog warningDialog;
-    private javax.swing.JLabel paraText;
+    private javax.swing.JLabel warningText;
     private javax.swing.JTextField parameter;
     private javax.swing.JMenuItem paste;
     private javax.swing.JMenu projectMenu;
