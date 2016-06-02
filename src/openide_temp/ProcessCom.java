@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package testclasses;
+package openide_temp;
 
+import testclasses.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -21,14 +22,14 @@ import java.util.logging.Logger;
  *
  * @author castor
  */
-public class processCom {
+public class ProcessCom {
 
     private static String outputText;
     private Scanner reader;
     private BufferedWriter writer;
     boolean flag  = true;
 
-    processCom() {
+    ProcessCom() {
         outputText = new String();
         try {
             ProcessBuilder builder = new ProcessBuilder("/bin/bash");
@@ -42,7 +43,7 @@ public class processCom {
             writer = new BufferedWriter(new OutputStreamWriter(stdin));
 
         } catch (IOException ex) {
-            Logger.getLogger(processCom.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ProcessCom.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -80,7 +81,7 @@ public class processCom {
             writer.write(command);
             writer.flush();
         } catch (IOException ex) {
-            Logger.getLogger(processCom.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ProcessCom.class.getName()).log(Level.SEVERE, null, ex);
         }
         
 

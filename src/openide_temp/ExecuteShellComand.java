@@ -19,15 +19,6 @@ import static openide_temp.TextEditor.displayOutput;
  * @author deadshot
  */
 public class ExecuteShellComand {
-
-    public void ExecuteCommand(String cmd) {
-        ExecuteShellComand obj = new ExecuteShellComand();
-
-        System.out.println(cmd);
-        obj.executeCommand(cmd);
-
-    }
-
     
       public String Execute(String[] cmd) {
         String s = "";

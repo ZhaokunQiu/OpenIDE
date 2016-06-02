@@ -233,7 +233,7 @@ public class TextEditor extends javax.swing.JFrame {
         compileIcon.setFocusPainted(false);
         compileIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                compile();
+                compile(null, null);
             }
         });
 
@@ -280,7 +280,7 @@ public class TextEditor extends javax.swing.JFrame {
 
         });
 
-        javax.swing.GroupLayout buttonRibbonLayout = new javax.swing.GroupLayout(buttonRibbon);
+        buttonRibbonLayout = new javax.swing.GroupLayout(buttonRibbon);
         buttonRibbon.setLayout(buttonRibbonLayout);
         buttonRibbonLayout.setHorizontalGroup(
                 buttonRibbonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -456,7 +456,7 @@ public class TextEditor extends javax.swing.JFrame {
         compile.setText("Compile");
         compile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compile();
+                compile(null, null);
             }
         });
         projectMenu.add(compile);
@@ -481,7 +481,7 @@ public class TextEditor extends javax.swing.JFrame {
         debugConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Debug debug = new Debug(projectSources, allCFiles);
+                Debug debug = new Debug(projectSources, allCFiles, buttonRibbonLayout, stepUp, stepDown, stop);
             }
 
         });
@@ -579,30 +579,52 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    public void compile() {
+    public void compile(String source, String outfile) {
+        boolean compileFile = true;
+        System.out.println("Compiling...");
+        String out = "", filePath = "";
         OutputPanel.removeAll();
         String f;
         if (!isSaved) {
+            System.out.println("Source not saved");
+            System.out.println("Saving file..");
             save();
+            System.out.println("File saved!");
+
         }
         int i = tabb.getSelectedIndex();
-        if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(i).equals("Output"))) {
-            //String filePath = "";
+        System.out.println("i value: " + tabb.getComponentCount());
+
+        System.out.println("Not passing the conditions..");
+        if (source != null) {
+            System.out.println("Source is not null..");
+            out = outfile;
+            filePath = source;
+            System.out.println("Output path: " + out);
+            System.out.println("Source file: " + filePath);
+        } else if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(i).equals("Output"))) {
+            System.out.println("Source is null");
             i = tabb.getSelectedIndex();
             compiledIndex = i;
             JPanel p = (JPanel) tabb.getTabComponentAt(i);
             JLabel title1 = (JLabel) p.getComponent(0);
             f = title1.getText();
             JLabel path = (JLabel) p.getComponent(1);
-            String filePath = path.getText();
-            String out = filePath.substring(0, filePath.length() - 2) + ".o";
+            filePath = path.getText();
+            out = filePath.substring(0, filePath.length() - 2) + ".o";
             String exceFileTemp = filePath.substring(0, filePath.lastIndexOf('/') + 1) + "./" + filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length() - 2) + ".o";
             exceFile = exceFileTemp.replace(" ", "\\ ");
+
+        } else {
+            compileFile = false;
+        }
+        if (compileFile) {
+            final String outtemp = out;
+            final String filePathTemp = filePath;
             System.out.println("Executable loc: " + exceFile);
             System.out.println("Compiling loc: " + out);
             changeStatus("Compiling", true);
-            final String outtemp = out;
-            final String filePathTemp = filePath;
+
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -616,11 +638,6 @@ public class TextEditor extends javax.swing.JFrame {
                         close.setBorderPainted(false);
                         GridBagConstraints gbc = new GridBagConstraints();
                         gbc.gridx = 0;
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException ex) {
-                            Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                         gbc.gridy = 0;
                         gbc.weightx = 1;
                         JPanel pnlTab = new JPanel(new GridBagLayout());
@@ -730,7 +747,7 @@ public class TextEditor extends javax.swing.JFrame {
             }
 
         } else {
-            compile();
+            compile(null, null);
             if (isCompiled) {
                 System.out.println("is compiled");
                 Thread t1 = new Thread(new Runnable() {
@@ -1177,6 +1194,7 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JButton compileIcon;
     private javax.swing.JMenuItem copy;
     private javax.swing.JPanel covePanel;
+    private javax.swing.GroupLayout buttonRibbonLayout;
     private javax.swing.JMenuItem cut;
     private javax.swing.JMenuItem documentation;
     private javax.swing.JMenuItem exitMenu;

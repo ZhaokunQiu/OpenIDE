@@ -11,17 +11,18 @@ package testclasses;
  */
 public class testMain {
     public static void main(String[] args) {
+       
         processCom process = new processCom();
         process.init();
-        process.runCommand("gdb");
+        process.executeCommand("gdb");
         System.out.println(process.readOutput());
-        process.runCommand("file /home/castor/rev");
+        process.executeCommand("file /home/castor/rev");
         System.out.println(process.readOutput());
-        process.runCommand("b 5");
+        process.executeCommand("b 5");
         System.out.println(process.readOutput());
-        process.runCommand("run");
+        process.executeCommand("run");
         System.out.println(process.readOutput());
-        process.runCommand("nexts");
+        process.executeCommand("next");
         System.out.println(process.readOutput());
     }
 }
