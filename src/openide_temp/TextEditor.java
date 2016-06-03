@@ -62,14 +62,15 @@ import jsyntaxpane.syntaxkits.CSyntaxKit;
 
 public class TextEditor extends javax.swing.JFrame {
 
-    private static boolean projectTreeVisable = true, resize = false, isCompiled = false;
-    private static String exceFile = "", output, selectedPath;
-    private static JPanel OutputPanel;
-    private static ExecuteShellComand comand;
+    public boolean projectTreeVisable = true, resize = false, isCompiled = false;
+    public String exceFile = "", output, selectedPath;
+    public static JPanel OutputPanel;
+    public ExecuteShellComand comand;
     public static int compiledIndex, lineNumber, selectedExeIndex;
     public static JLabel link;
-    public static ArrayList<String> allExes, allCFiles;
-    public static ArrayList<ArrayList> projectExes, projectSources;
+    public ArrayList<String> allExes, allCFiles;
+    public ArrayList<ArrayList> projectExes, projectSources;
+    public ProjectTree projectTreeObj;
 
     public TextEditor() {
         try {
@@ -84,8 +85,6 @@ public class TextEditor extends javax.swing.JFrame {
             //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        CSyntaxKit.initKit();
-        initComponents();
         OutputPanel = new JPanel();
         OutputPanel.setLayout(new BoxLayout(OutputPanel, BoxLayout.Y_AXIS));
         OutputPanel.setName("Output");
@@ -95,6 +94,10 @@ public class TextEditor extends javax.swing.JFrame {
         allCFiles = new ArrayList();
         IDELogger = LoggerFactory.getLogger(TextEditor.class);
         projectSources = new ArrayList();
+
+        CSyntaxKit.initKit();
+        initComponents();
+
     }
 
     @SuppressWarnings("unchecked")
@@ -144,6 +147,7 @@ public class TextEditor extends javax.swing.JFrame {
         stop = new JButton();
         printValue = new JTextField();
         printBtn = new JButton("Value");
+
 
         /* Opening a waring dialog when user tries to create a new file which is already present */
         warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
@@ -360,7 +364,8 @@ public class TextEditor extends javax.swing.JFrame {
         gridBag.weighty = 1;
         gridBag.weighty = 1.0;
         gridBag.anchor = GridBagConstraints.NORTHWEST;
-        projectDisplay.add(new JTree(addNodes(null, new File("."), new ArrayList(), new ArrayList())), gridBag);
+        projectTreeObj = new ProjectTree(projectSources, projectExes, gridBag, projectDisplay);
+        projectDisplay.add(new JTree(projectTreeObj.addNodes(null, new File("."), new ArrayList(), new ArrayList())), gridBag);
 
         //projectDisplay.add(new JLabel("Open Projects"));
         //projectTree.setBackground(Color.LIGHT_GRAY);
@@ -404,7 +409,7 @@ public class TextEditor extends javax.swing.JFrame {
         openProject.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                addProjectTree();
+                projectTreeObj.addProjectTree();
             }
 
         });
@@ -967,98 +972,7 @@ public class TextEditor extends javax.swing.JFrame {
             statusMsg.setIcon(null);
         }
     }
-
-    DefaultMutableTreeNode addNodes(DefaultMutableTreeNode curTop, File dir, ArrayList<String> tempExes, ArrayList<String> tempSource) {
-        String curPath = dir.getPath();
-        DefaultMutableTreeNode curDir = new DefaultMutableTreeNode(curPath);
-        if (curTop != null) { // should only be null at root
-            curTop.add(curDir);
-        }
-        Vector ol = new Vector();
-        String[] tmp = dir.list();
-        for (int i = 0; i < tmp.length; i++) {
-            //System.out.println(tmp[i]);
-
-            File f = new File(dir.getAbsolutePath() + "/" + tmp[i]);
-            if (f.canExecute() && !tmp[i].endsWith(".o") && !f.isDirectory() && !tmp[i].contains(".")) {
-                tempExes.add(dir.getAbsolutePath() + "/./" + tmp[i]);
-            }
-
-            if (f.canExecute() && !tmp[i].endsWith(".o") && !f.isDirectory() && !tmp[i].contains(".")) {
-                tempSource.add(dir.getAbsolutePath() + "/" + tmp[i]);
-            }
-            ol.addElement(tmp[i]);
-        }
-        Collections.sort(ol, String.CASE_INSENSITIVE_ORDER);
-        File f;
-        Vector files = new Vector();
-        // Make two passes, one for Dirs and one for Files. This is #1.
-        for (int i = 0; i < ol.size(); i++) {
-            String thisObject = (String) ol.elementAt(i);
-            String newPath;
-            if (curPath.equals(".")) {
-                newPath = thisObject;
-            } else {
-                newPath = curPath + File.separator + thisObject;
-            }
-            if ((f = new File(newPath)).isDirectory()) {
-                addNodes(curDir, f, tempExes, tempSource);
-            } else {
-                files.addElement(thisObject);
-            }
-        }
-        for (int fnum = 0; fnum < files.size(); fnum++) {
-            curDir.add(new DefaultMutableTreeNode(files.elementAt(fnum)));
-        }
-        return curDir;
-    }
-
-    public void addProjectTree() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Choose the project folder: ");
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int userSelection = fileChooser.showSaveDialog(this);
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File projectFolder = fileChooser.getSelectedFile();
-            ArrayList<String> tempExes = new ArrayList<>();
-            ArrayList<String> tempSource = new ArrayList<>();
-            tempExes.add(projectFolder.getAbsolutePath());
-            tempSource.add(projectFolder.getAbsolutePath());
-            JTree tree = new JTree(addNodes(null, projectFolder, tempExes, tempSource));
-            projectExes.add(tempExes);
-            projectSources.add(tempSource);
-            MouseListener ml = new MouseAdapter() {
-                public void mousePressed(MouseEvent e) {
-                    //System.out.println("Mouse pressed!");
-                    int selRow = tree.getRowForLocation(e.getX(), e.getY());
-                    TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-                    if (selRow != -1) {
-                        if (e.getClickCount() == 1) {
-                            //System.out.println("Single Click");
-                            System.out.println(selPath);
-
-                        } else if (e.getClickCount() == 2) {
-                            //System.out.println("Double Click!");
-
-                            Object[] path = selPath.getPath();
-                            String fPath = path[path.length - 2] + "/" + path[path.length - 1];
-                            System.out.println(fPath);
-                            File f = new File(fPath);
-                            if (f.isFile()) {
-                                openFile(new File(fPath));
-                            }
-
-                        }
-                    }
-                }
-            };
-            tree.addMouseListener(ml);
-            gridBag.gridy++;
-            projectDisplay.add(tree, gridBag);
-            projectDisplay.revalidate();
-        }
-    }
-
+    
     private void hightLightLine(JEditorPane edit, int lineNo) {
         edit.setCaretPosition(PROPERTIES);
         edit.getHighlighter().removeAllHighlights();
@@ -1075,30 +989,6 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    /*private void isOpen(File f, String title) {
-        System.out.println("Checking if file is open...");
-        boolean fileOpen = false;
-        int loc = 0;
-        for (int i = 0; i < tabb.getComponentCount() - 1; i++) {
-            JPanel panel = (JPanel) tabb.getTabComponentAt(i);
-            JLabel title1 = (JLabel) panel.getComponent(0);
-            if (title.compareTo(title1.getText()) == 0) {
-                fileOpen = true;
-                loc = i;
-                JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
-                JViewport viewport = s.getViewport();
-                editor = (JEditorPane) viewport.getView();
-            }
-        }
-        if (fileOpen) {
-            System.out.println("file is open at tab index " + loc);
-            tabb.setSelectedIndex(loc);
-        } else {
-            System.out.println("Opening file in a new tab");
-            openFile(f);
-        }
-    }
-*/
     private void runConfiguration() {
         System.out.println("Run configuration started");
         runConfigDialog = new JDialog();
@@ -1502,8 +1392,8 @@ public class TextEditor extends javax.swing.JFrame {
     private JMenuItem openProject;
     private JMenuItem runConfig;
     private JMenuItem debugConfig;
-    private JPanel projectDisplay;
-    private GridBagConstraints gridBag;
+    public JPanel projectDisplay;
+    public GridBagConstraints gridBag;
     private JDialog debugConfigDialog;
     private JButton stepUp;
     private JButton stepDown;
