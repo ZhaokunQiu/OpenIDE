@@ -71,7 +71,9 @@ public class TextEditor extends javax.swing.JFrame {
     public ArrayList<String> allExes, allCFiles;
     public ArrayList<ArrayList> projectExes, projectSources;
     public ProjectTree projectTreeObj;
-
+    public SaveFile savefile;
+    
+    
     public TextEditor() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -147,7 +149,7 @@ public class TextEditor extends javax.swing.JFrame {
         stop = new JButton();
         printValue = new JTextField();
         printBtn = new JButton("Value");
-
+        savefile = new SaveFile(tabb);
 
         /* Opening a waring dialog when user tries to create a new file which is already present */
         warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
@@ -236,7 +238,7 @@ public class TextEditor extends javax.swing.JFrame {
         saveIcon.setFocusPainted(false);
         saveIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                save();
+                savefile.save();
             }
         });
 
@@ -391,7 +393,7 @@ public class TextEditor extends javax.swing.JFrame {
         save.setText("Save");
         save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveActionPerformed(evt);
+                savefile.save();
             }
         });
         fileMenu.add(save);
@@ -557,10 +559,7 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    private void saveActionPerformed(java.awt.event.ActionEvent evt) {
-        save();
-    }
-
+    /*
     public void save() {
         int i = tabb.getSelectedIndex();
         if (!(tabb.getTabCount() == 0) && !(tabb.getTitleAt(i).equals("Output"))) {
@@ -592,7 +591,7 @@ public class TextEditor extends javax.swing.JFrame {
 
         }
     }
-
+*/
     public void compile(String source, String outfile) {
         boolean compileFile = true;
         System.out.println("Compiling...");
@@ -602,7 +601,7 @@ public class TextEditor extends javax.swing.JFrame {
         JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
         JLabel lbl = (JLabel) pnl.getComponent(2);
         if (lbl.getText().compareTo("false") == 0) {
-            save();
+            savefile.save();
         }
         int i = tabb.getSelectedIndex();
         if (source != null) {
@@ -710,7 +709,7 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     public void run() {
-        save();
+        savefile.save();
         int selIndex = tabb.getSelectedIndex();
         JPanel p = (JPanel) tabb.getTabComponentAt(selIndex);
         final JLabel title1 = (JLabel) p.getComponent(0);
