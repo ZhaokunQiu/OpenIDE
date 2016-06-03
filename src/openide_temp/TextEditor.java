@@ -62,7 +62,7 @@ import jsyntaxpane.syntaxkits.CSyntaxKit;
 
 public class TextEditor extends javax.swing.JFrame {
 
-    private static boolean projectTreeVisable = true, isSaved = true, resize = false, isCompiled = false;
+    private static boolean projectTreeVisable = true, resize = false, isCompiled = false;
     private static String exceFile = "", output, selectedPath;
     private static JPanel OutputPanel;
     private static ExecuteShellComand comand;
@@ -584,7 +584,7 @@ public class TextEditor extends javax.swing.JFrame {
                 e.printStackTrace();
             }
             System.out.println("File saved");
-            isSaved = false;
+
         }
     }
 
@@ -594,12 +594,12 @@ public class TextEditor extends javax.swing.JFrame {
         String out = "", filePath = "";
         OutputPanel.removeAll();
         String f;
-        if (!isSaved) {
+        JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+        JLabel lbl = (JLabel) pnl.getComponent(2);
+        if (lbl.getText().compareTo("false") == 0) {
             save();
         }
         int i = tabb.getSelectedIndex();
-        //System.out.println("i value: " + tabb.getComponentCount());
-        //System.out.println("Not passing the conditions..");
         if (source != null) {
             System.out.println("Compiling source file " + source);
             out = outfile;
@@ -625,8 +625,6 @@ public class TextEditor extends javax.swing.JFrame {
         if (compileFile) {
             final String outtemp = out;
             final String filePathTemp = filePath;
-            //System.out.println("Executable loc: " + exceFile);
-            //System.out.println("Compiling loc: " + out);
             System.out.println("Ready for compiling...");
             System.out.println("Compilation output: ");
             changeStatus("Compiling", true);
@@ -780,148 +778,167 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     public void openFile(File f) {
-        System.out.println("Opening a new file");
-        File fileToOpen = null;
-        JEditorPane codeEditor = new JEditorPane();
-        editor = codeEditor;
-        JScrollPane scroll = new JScrollPane(codeEditor);
-        codeEditor.setContentType("text/java");
-        String code = null;
-        BufferedReader br = null;
-        try {
-            fileToOpen = f;
-            br = new BufferedReader(new FileReader(fileToOpen.getAbsolutePath()));
+        String PathTemp = f.getAbsolutePath();
+        System.out.println("Checking if file is open...");
+        boolean fileOpen = false;
+        int loc = 0;
+        for (int i = 0; i < tabb.getComponentCount() - 1; i++) {
+            JPanel panel = (JPanel) tabb.getTabComponentAt(i);
+            JLabel path = (JLabel) panel.getComponent(1);
+            if (PathTemp.compareTo(path.getText()) == 0) {
+                fileOpen = true;
+                loc = i;
+                JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
+                JViewport viewport = s.getViewport();
+                editor = (JEditorPane) viewport.getView();
+            }
+        }
+        if (fileOpen) {
+            System.out.println("file is open at tab index " + loc);
+            tabb.setSelectedIndex(loc);
+        } else {
+            System.out.println("Opening file in a new tab");
+            System.out.println("Opening a new file");
+            File fileToOpen = null;
+            JEditorPane codeEditor = new JEditorPane();
+            editor = codeEditor;
+            JScrollPane scroll = new JScrollPane(codeEditor);
+            codeEditor.setContentType("text/java");
+            String code = null;
+            BufferedReader br = null;
             try {
-                StringBuilder sb = new StringBuilder();
-                String line = br.readLine();
-
-                while (line != null) {
-                    sb.append(line);
-                    sb.append(System.lineSeparator());
-                    line = br.readLine();
-                }
-                code = sb.toString();
-
-            } catch (IOException ex) {
-                //Logger.getLogger(TextEditor.class
-                // .getName()).log(Level.SEVERE, null, ex);
-            } finally {
+                fileToOpen = f;
+                br = new BufferedReader(new FileReader(fileToOpen.getAbsolutePath()));
                 try {
-                    br.close();
+                    StringBuilder sb = new StringBuilder();
+                    String line = br.readLine();
+
+                    while (line != null) {
+                        sb.append(line);
+                        sb.append(System.lineSeparator());
+                        line = br.readLine();
+                    }
+                    code = sb.toString();
 
                 } catch (IOException ex) {
                     //Logger.getLogger(TextEditor.class
                     // .getName()).log(Level.SEVERE, null, ex);
+                } finally {
+                    try {
+                        br.close();
 
-                }
-            }
-        } catch (FileNotFoundException ex) {
-            //Logger.getLogger(TextEditor.class
-            // .getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (br != null) {
-                    br.close();
+                    } catch (IOException ex) {
+                        //Logger.getLogger(TextEditor.class
+                        // .getName()).log(Level.SEVERE, null, ex);
 
-                }
-            } catch (IOException ex) {
-                //Logger.getLogger(TextEditor.class
-                //  .getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        scroll.setPreferredSize(new Dimension(260, 85));
-
-        scroll.setMaximumSize(new Dimension(2147483647, 2147483647));
-        scroll.setMinimumSize(new Dimension(0, 17));
-
-        codeEditor.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void changedUpdate(DocumentEvent de) {
-                JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-                JLabel saveStatus = (JLabel) p.getComponent(2);
-                saveStatus.setText("false");
-                changeTitle();
-
-            }
-
-            @Override
-            public void insertUpdate(DocumentEvent de) {
-                JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-                JLabel saveStatus = (JLabel) p.getComponent(2);
-                saveStatus.setText("false");
-                changeTitle();
-
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent de) {
-                JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-                JLabel saveStatus = (JLabel) p.getComponent(2);
-                saveStatus.setText("false");
-                changeTitle();
-
-            }
-
-            public void changeTitle() {
-                System.out.println("File changed");
-                int i = tabb.getSelectedIndex();
-                JPanel panel = (JPanel) tabb.getTabComponentAt(i);
-                JLabel title1 = (JLabel) panel.getComponent(0);
-                JLabel saveStatus = (JLabel) panel.getComponent(2);
-                if (saveStatus.getText().compareToIgnoreCase("false") == 0) {
-                    System.out.println("No star");
-                    String title = title1.getText();
-                    if (title.charAt(0) != '*') {
-                        System.out.println("adding star..");
-                        title = "*" + title;
-                        title1.setText(title);
                     }
                 }
-            }
-        });
+            } catch (FileNotFoundException ex) {
+                //Logger.getLogger(TextEditor.class
+                // .getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                try {
+                    if (br != null) {
+                        br.close();
 
-        tabb.add(scroll);
-        int i = tabb.getTabCount();
-        tabb.setSelectedIndex(i - 1);
-        JPanel pnlTab = new JPanel(new GridBagLayout());
-        pnlTab.setOpaque(false);
-        JLabel title = new JLabel(fileToOpen.getName());
-        JButton close = new JButton("x");
-        close.setBorderPainted(false);
-        close.setForeground(Color.red);
-        close.setFocusPainted(false);
-        close.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JButton b = (JButton) e.getSource();
-                JPanel parent = (JPanel) b.getParent();
-                int i = tabb.indexOfTabComponent(parent);
-                if (i != -1) {
-                    tabb.remove(i);
+                    }
+                } catch (IOException ex) {
+                    //Logger.getLogger(TextEditor.class
+                    //  .getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        });
-        System.out.println("Opening file [" + fileToOpen + "]");
-        System.out.println("File name: " + fileToOpen.getName());
-        System.out.println("Tab count = " + tabb.getTabCount());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        pnlTab.add(title, gbc);
-        gbc.gridx++;
-        JLabel path = new JLabel(fileToOpen.getAbsolutePath());
-        path.setVisible(false);
-        pnlTab.add(path, gbc);
-        JLabel saveStatus = new JLabel("false");
-        saveStatus.setVisible(false);
-        pnlTab.add(saveStatus);
-        gbc.gridx++;
-        gbc.weightx = 0;
-        pnlTab.add(close, gbc);
-        tabb.setTabComponentAt(i - 1, pnlTab);
-        codeEditor.setText(code);
-        revalidate();
+            scroll.setPreferredSize(new Dimension(260, 85));
+
+            scroll.setMaximumSize(new Dimension(2147483647, 2147483647));
+            scroll.setMinimumSize(new Dimension(0, 17));
+
+            codeEditor.getDocument().addDocumentListener(new DocumentListener() {
+
+                @Override
+                public void changedUpdate(DocumentEvent de) {
+                    JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+                    JLabel saveStatus = (JLabel) p.getComponent(2);
+                    saveStatus.setText("false");
+                    changeTitle();
+
+                }
+
+                @Override
+                public void insertUpdate(DocumentEvent de) {
+                    JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+                    JLabel saveStatus = (JLabel) p.getComponent(2);
+                    saveStatus.setText("false");
+                    changeTitle();
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent de) {
+                    JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+                    JLabel saveStatus = (JLabel) p.getComponent(2);
+                    saveStatus.setText("false");
+                    changeTitle();
+                }
+
+                public void changeTitle() {
+                    System.out.println("File changed");
+                    int i = tabb.getSelectedIndex();
+                    JPanel panel = (JPanel) tabb.getTabComponentAt(i);
+                    JLabel title1 = (JLabel) panel.getComponent(0);
+                    JLabel saveStatus = (JLabel) panel.getComponent(2);
+                    if (saveStatus.getText().compareToIgnoreCase("false") == 0) {
+                        System.out.println("No star");
+                        String title = title1.getText();
+                        if (title.charAt(0) != '*') {
+                            System.out.println("adding star..");
+                            title = "*" + title;
+                            title1.setText(title);
+                        }
+                    }
+                }
+            });
+
+            tabb.add(scroll);
+            int i = tabb.getTabCount();
+            tabb.setSelectedIndex(i - 1);
+            JPanel pnlTab = new JPanel(new GridBagLayout());
+            pnlTab.setOpaque(false);
+            JLabel title = new JLabel(fileToOpen.getName());
+            JButton close = new JButton("x");
+            close.setBorderPainted(false);
+            close.setForeground(Color.red);
+            close.setFocusPainted(false);
+            close.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JButton b = (JButton) e.getSource();
+                    JPanel parent = (JPanel) b.getParent();
+                    int i = tabb.indexOfTabComponent(parent);
+                    if (i != -1) {
+                        tabb.remove(i);
+                    }
+                }
+            });
+            System.out.println("Opening file [" + fileToOpen + "]");
+            System.out.println("File name: " + fileToOpen.getName());
+            System.out.println("Tab count = " + tabb.getTabCount());
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            pnlTab.add(title, gbc);
+            gbc.gridx++;
+            JLabel path = new JLabel(fileToOpen.getAbsolutePath());
+            path.setVisible(false);
+            pnlTab.add(path, gbc);
+            JLabel saveStatus = new JLabel("false");
+            saveStatus.setVisible(false);
+            pnlTab.add(saveStatus);
+            gbc.gridx++;
+            gbc.weightx = 0;
+            pnlTab.add(close, gbc);
+            tabb.setTabComponentAt(i - 1, pnlTab);
+            codeEditor.setText(code);
+            revalidate();
+        }
     }
 
     public void open() {
@@ -1028,9 +1045,8 @@ public class TextEditor extends javax.swing.JFrame {
                             System.out.println(fPath);
                             File f = new File(fPath);
                             if (f.isFile()) {
-                                File f1 = new File(fPath);
-                                isOpen(f1,f1.getName());
-                            } 
+                                openFile(new File(fPath));
+                            }
 
                         }
                     }
@@ -1059,7 +1075,7 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    private void isOpen(File f, String title) {
+    /*private void isOpen(File f, String title) {
         System.out.println("Checking if file is open...");
         boolean fileOpen = false;
         int loc = 0;
@@ -1082,7 +1098,7 @@ public class TextEditor extends javax.swing.JFrame {
             openFile(f);
         }
     }
-
+*/
     private void runConfiguration() {
         System.out.println("Run configuration started");
         runConfigDialog = new JDialog();
@@ -1383,7 +1399,7 @@ public class TextEditor extends javax.swing.JFrame {
         File f1 = new File(pathOfSource + ".c");
         System.out.println("Debugging file : [" + f1.getAbsolutePath() + "]");
         System.out.println("Name: " + f1.getName());
-        isOpen(f1, f1.getName());
+        openFile(f1);
         gdb.executeCommand("gdb " + exceFileTemp);
         gdbOutput.setText(gdbOutput.getText() + "\n" + gdb.readOutput());
         debugConfigDialog.setVisible(false);
