@@ -37,16 +37,9 @@ public class Debug extends TextEditor{
     private String selectedPath;
     private int selectedExeIndex;
     private JDialog debugConfigDialog;
-    private GroupLayout debuggerLayout;
-    private JButton stepUp;
-    private JButton stepDown;
-    private JButton stop;
+
     Debug(ArrayList<ArrayList> projectSources, ArrayList allExes,GroupLayout layout,JButton up,JButton down, JButton stop1) {
-        stepUp = up;
-        stepDown = down;
-        stop = stop1;
-        debuggerLayout = layout;
-        System.out.println("Runing run config..");
+        System.out.println("Debug config..");
         debugConfigDialog = new JDialog();
         Dimension dim = new Dimension(360, 380);
         Dimension dimPre = new Dimension(700, 700);
@@ -169,7 +162,7 @@ public class Debug extends TextEditor{
             System.out.println("$test: "+output);
             System.out.println("last index "+output.lastIndexOf("line"));
             System.out.println(""+output.substring(output.lastIndexOf("line")+5, output.length()-2));
-            lineNumber = Integer.parseInt(output.substring(output.lastIndexOf("line")+5, output.length()-2));
+            int lineNumber = Integer.parseInt(output.substring(output.lastIndexOf("line")+5, output.length()-2));
             System.out.println("The line number "+lineNumber);
         }else{
             int lineNumber = Integer.parseInt(lineNo.getText());
