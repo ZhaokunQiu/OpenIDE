@@ -1,5 +1,7 @@
 package openide_temp;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -27,7 +29,6 @@ import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -65,7 +66,7 @@ public class TextEditor extends javax.swing.JFrame {
     private static String exceFile = "", output, selectedPath;
     private static JPanel OutputPanel;
     private static ExecuteShellComand comand;
-    public static int compiledIndex, mouseX, mouseY, lineNumber, selectedExeIndex;
+    public static int compiledIndex, lineNumber, selectedExeIndex;
     public static JLabel link;
     public static ArrayList<String> allExes, allCFiles;
     public static ArrayList<ArrayList> projectExes, projectSources;
@@ -74,13 +75,13 @@ public class TextEditor extends javax.swing.JFrame {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         CSyntaxKit.initKit();
@@ -92,6 +93,7 @@ public class TextEditor extends javax.swing.JFrame {
         allExes = new ArrayList();
         projectExes = new ArrayList();
         allCFiles = new ArrayList();
+        IDELogger = LoggerFactory.getLogger(TextEditor.class);
         projectSources = new ArrayList();
     }
 
@@ -336,12 +338,6 @@ public class TextEditor extends javax.swing.JFrame {
                 .addComponent(printValue)
                 .addComponent(printBtn)
         );
-
-        tabb.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseDragged(java.awt.event.MouseEvent evt) {
-                tabbMouseDragged(evt);
-            }
-        });
         BorderLayout coveLay = new BorderLayout();
         covePanel.setLayout(coveLay);
         covePanel.add(buttonRibbon, coveLay.NORTH);
@@ -371,22 +367,6 @@ public class TextEditor extends javax.swing.JFrame {
         covePanel.add(projectTree, coveLay.WEST);
         getContentPane().add(covePanel);
         //resizing project tree
-        projectTree.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(java.awt.event.MouseEvent evt) {
-                mouseX = evt.getX();
-                mouseY = evt.getY();
-                if (mouseX >= (projectTree.getWidth() - 10) && mouseX <= projectTree.getWidth()) {
-                    resize = true;
-                }
-                if (resize) {
-                    System.out.println(mouseX);
-                    projectTree.setSize(projectTree.getWidth() + 1, projectTree.getHeight());
-                    //tabb.setSize(tabb.getWidth() -1, tabb.getHeight());
-                    //pack();
-                }
-            }
-        });
 
         //adding project tree
         menuOptions.setMargin(new java.awt.Insets(0, 5, 0, 0));
@@ -551,8 +531,6 @@ public class TextEditor extends javax.swing.JFrame {
         pack();
     }// </editor-fold>                        
 
-    
-    
     public void newFile() {
         JEditorPane codeEditor = new JEditorPane();
         codeEditor.setContentType("text/java");
@@ -566,7 +544,7 @@ public class TextEditor extends javax.swing.JFrame {
                     fileToSave.createNewFile();
                     openFile(fileToSave);
                 } catch (IOException ex) {
-                    Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
                 warningDialog.setVisible(true);
@@ -581,25 +559,31 @@ public class TextEditor extends javax.swing.JFrame {
     public void save() {
         int i = tabb.getSelectedIndex();
         if (!(tabb.getTabCount() == 0) && !(tabb.getTitleAt(i).equals("Output"))) {
-
             try {
+
                 JPanel p = (JPanel) tabb.getTabComponentAt(i);
-                JLabel title = (JLabel) p.getComponent(0);
-                String f = title.getText();
-                f = f.replace("*", "");
-                JLabel path = (JLabel) p.getComponent(1);
-                JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
-                JViewport viewport = s.getViewport();
-                JEditorPane a = (JEditorPane) viewport.getView();
-                File file = new File(path.getText());
-                try (FileWriter writer = new FileWriter(file)) {
-                    writer.write(a.getText());
-                    writer.flush();
+                JLabel saveStatus = (JLabel) p.getComponent(2);
+                if (saveStatus.getText().compareToIgnoreCase("false") == 0) {
+                    saveStatus.setText("true");
+                    JLabel title = (JLabel) p.getComponent(0);
+                    String f = title.getText();
+                    f = f.replace("*", "");
+                    JLabel path = (JLabel) p.getComponent(1);
+                    JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
+                    JViewport viewport = s.getViewport();
+                    JEditorPane a = (JEditorPane) viewport.getView();
+                    File file = new File(path.getText());
+                    System.out.println("Saving file [" + path.getText() + "]");
+                    try (FileWriter writer = new FileWriter(file)) {
+                        writer.write(a.getText());
+                        writer.flush();
+                    }
+                    title.setText(f);
                 }
-                title.setText(f);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            System.out.println("File saved");
             isSaved = false;
         }
     }
@@ -611,24 +595,18 @@ public class TextEditor extends javax.swing.JFrame {
         OutputPanel.removeAll();
         String f;
         if (!isSaved) {
-            System.out.println("Source not saved");
-            System.out.println("Saving file..");
             save();
-            System.out.println("File saved!");
-
         }
         int i = tabb.getSelectedIndex();
-        System.out.println("i value: " + tabb.getComponentCount());
-
-        System.out.println("Not passing the conditions..");
+        //System.out.println("i value: " + tabb.getComponentCount());
+        //System.out.println("Not passing the conditions..");
         if (source != null) {
-            System.out.println("Source is not null..");
+            System.out.println("Compiling source file " + source);
             out = outfile;
             filePath = source;
-            System.out.println("Output path: " + out);
-            System.out.println("Source file: " + filePath);
+            System.out.println("Excutable file stored at loc: " + out);
         } else if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(i).equals("Output"))) {
-            System.out.println("Source is null");
+            System.out.println("Compiling tab file");
             i = tabb.getSelectedIndex();
             compiledIndex = i;
             JPanel p = (JPanel) tabb.getTabComponentAt(i);
@@ -639,15 +617,18 @@ public class TextEditor extends javax.swing.JFrame {
             out = filePath.substring(0, filePath.length() - 2);
             String exceFileTemp = filePath.substring(0, filePath.lastIndexOf('/') + 1) + "./" + filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length() - 2);
             exceFile = exceFileTemp.replace(" ", "\\ ");
-
+            System.out.println("Compiling source file " + filePath);
+            System.out.println("Excutable file stored at loc: " + exceFile);
         } else {
             compileFile = false;
         }
         if (compileFile) {
             final String outtemp = out;
             final String filePathTemp = filePath;
-            System.out.println("Executable loc: " + exceFile);
-            System.out.println("Compiling loc: " + out);
+            //System.out.println("Executable loc: " + exceFile);
+            //System.out.println("Compiling loc: " + out);
+            System.out.println("Ready for compiling...");
+            System.out.println("Compilation output: ");
             changeStatus("Compiling", true);
 
             Thread t = new Thread(new Runnable() {
@@ -656,11 +637,12 @@ public class TextEditor extends javax.swing.JFrame {
                     String arr[] = {"cc", filePathTemp, "-o", outtemp, "-g", "-g3"};
                     output = comand.Execute(arr);
                     if (output.equals("")) {
+                        System.out.println("File compiled without errors.");
                         statusMsg.setText("Status: Code compile without any errors.");
-                        allCFiles.add(outtemp);
-                        allExes.add(outtemp);
+                        allCFiles.add(outtemp.replace(" ", "\\ "));
+                        allExes.add(outtemp.replace(" ", "\\ "));
                     } else {
-
+                        System.out.println("Error: file compiled with one or more errors");
                         JButton close = new JButton("x");
                         close.setForeground(Color.RED);
                         close.setBorderPainted(false);
@@ -706,6 +688,7 @@ public class TextEditor extends javax.swing.JFrame {
     public static void displayOutput(String line) {
         JLabel lab = new JLabel();
         if (line.contains("error") || line.contains("warning")) {
+
             link = new JLabel();
             link.addMouseListener(new ErrorLoctionListener(tabb));
             link.setForeground(Color.blue);
@@ -720,6 +703,7 @@ public class TextEditor extends javax.swing.JFrame {
             lab.setText(line);
             OutputPanel.add(lab);
         }
+        System.out.println(line);
     }
 
     public void run() {
@@ -729,14 +713,14 @@ public class TextEditor extends javax.swing.JFrame {
         final JLabel title1 = (JLabel) p.getComponent(0);
         System.out.println(title1.getText());
         if (title1.getText().equalsIgnoreCase("makefile")) {
-            System.out.println("Its a make file");
+            System.out.println("Running a make file");
             if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(selIndex).equals("Output"))) {
                 Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         JLabel path = (JLabel) p.getComponent(1);
                         String filePath = path.getText();
-                        System.out.println("here is the file path = " + filePath);
+                        System.out.println("Makefile [" + filePath + "]");
                         String theCommand = "";
                         String location = filePath.substring(0, filePath.toLowerCase().indexOf("makefile") - 1);
                         theCommand += "cd " + location + "\n";
@@ -746,6 +730,7 @@ public class TextEditor extends javax.swing.JFrame {
                         theCommand += "make install" + "\n";
                         theCommand += "echo 'Done building...'" + "\n";
                         //theCommand += "mosquitto" + "\n";
+                        System.out.println("Saving shellscript for make at /home/castor/Desktop/scriptMake.sh");
                         File scriptFile = new File("/home/castor/Desktop/scriptMake.sh");
 
                         try {
@@ -754,13 +739,15 @@ public class TextEditor extends javax.swing.JFrame {
                             bf.write(theCommand);
                             bf.close();
                         } catch (IOException ex) {
-                            Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+                            // Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
                         }
 
                         Thread t = new Thread(new Runnable() {
                             @Override
                             public void run() {
+                                System.out.println("Ready to run make");
                                 String arr[] = {"xterm", "-hold", "-e", "sh", "/home/castor/Desktop/scriptMake.sh"};
+                                System.out.println("Make executed successfully");
                                 comand.Execute(arr);
                             }
 
@@ -775,12 +762,14 @@ public class TextEditor extends javax.swing.JFrame {
             }
 
         } else {
+            System.out.println("Compiling file..");
             compile(null, null);
             if (isCompiled) {
-                System.out.println("is compiled");
+                System.out.println("File compiled successfully");
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        System.out.println("Ready to run exe");
                         String arr[] = {"xterm", "-hold", "-e", exceFile};
                         comand.Execute(arr);
                     }
@@ -791,7 +780,7 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     public void openFile(File f) {
-        System.out.println("opening file");
+        System.out.println("Opening a new file");
         File fileToOpen = null;
         JEditorPane codeEditor = new JEditorPane();
         editor = codeEditor;
@@ -814,21 +803,21 @@ public class TextEditor extends javax.swing.JFrame {
                 code = sb.toString();
 
             } catch (IOException ex) {
-                Logger.getLogger(TextEditor.class
-                        .getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(TextEditor.class
+                // .getName()).log(Level.SEVERE, null, ex);
             } finally {
                 try {
                     br.close();
 
                 } catch (IOException ex) {
-                    Logger.getLogger(TextEditor.class
-                            .getName()).log(Level.SEVERE, null, ex);
+                    //Logger.getLogger(TextEditor.class
+                    // .getName()).log(Level.SEVERE, null, ex);
 
                 }
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(TextEditor.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            //Logger.getLogger(TextEditor.class
+            // .getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 if (br != null) {
@@ -836,8 +825,8 @@ public class TextEditor extends javax.swing.JFrame {
 
                 }
             } catch (IOException ex) {
-                Logger.getLogger(TextEditor.class
-                        .getName()).log(Level.SEVERE, null, ex);
+                //Logger.getLogger(TextEditor.class
+                //  .getName()).log(Level.SEVERE, null, ex);
             }
         }
         scroll.setPreferredSize(new Dimension(260, 85));
@@ -849,47 +838,51 @@ public class TextEditor extends javax.swing.JFrame {
 
             @Override
             public void changedUpdate(DocumentEvent de) {
-                if (isSaved == false) {
-                    changeTitle();
-                }
+                JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+                JLabel saveStatus = (JLabel) p.getComponent(2);
+                saveStatus.setText("false");
+                changeTitle();
+
             }
 
             @Override
             public void insertUpdate(DocumentEvent de) {
-                if (isSaved == false) {
-                    changeTitle();
-                }
+                JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+                JLabel saveStatus = (JLabel) p.getComponent(2);
+                saveStatus.setText("false");
+                changeTitle();
 
             }
 
             @Override
             public void removeUpdate(DocumentEvent de) {
-                if (isSaved == false) {
-                    changeTitle();
-                }
+                JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+                JLabel saveStatus = (JLabel) p.getComponent(2);
+                saveStatus.setText("false");
+                changeTitle();
 
             }
 
             public void changeTitle() {
-                if (isSaved == false) {
-                    //Font font = new Font("Ubuntu", Font.BOLD, 15);
-                    int i = tabb.getSelectedIndex();
-                    JPanel panel = (JPanel) tabb.getTabComponentAt(i);
-                    JLabel title1 = (JLabel) panel.getComponent(0);
+                System.out.println("File changed");
+                int i = tabb.getSelectedIndex();
+                JPanel panel = (JPanel) tabb.getTabComponentAt(i);
+                JLabel title1 = (JLabel) panel.getComponent(0);
+                JLabel saveStatus = (JLabel) panel.getComponent(2);
+                if (saveStatus.getText().compareToIgnoreCase("false") == 0) {
+                    System.out.println("No star");
                     String title = title1.getText();
-                    if (!(title.charAt(0) == '*')) {
+                    if (title.charAt(0) != '*') {
+                        System.out.println("adding star..");
                         title = "*" + title;
                         title1.setText(title);
                     }
                 }
             }
-
         });
 
         tabb.add(scroll);
-        System.out.println("Tab added.");
         int i = tabb.getTabCount();
-        System.out.println("Tab count = " + i);
         tabb.setSelectedIndex(i - 1);
         JPanel pnlTab = new JPanel(new GridBagLayout());
         pnlTab.setOpaque(false);
@@ -909,6 +902,9 @@ public class TextEditor extends javax.swing.JFrame {
                 }
             }
         });
+        System.out.println("Opening file [" + fileToOpen + "]");
+        System.out.println("File name: " + fileToOpen.getName());
+        System.out.println("Tab count = " + tabb.getTabCount());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -917,6 +913,9 @@ public class TextEditor extends javax.swing.JFrame {
         JLabel path = new JLabel(fileToOpen.getAbsolutePath());
         path.setVisible(false);
         pnlTab.add(path, gbc);
+        JLabel saveStatus = new JLabel("false");
+        saveStatus.setVisible(false);
+        pnlTab.add(saveStatus);
         gbc.gridx++;
         gbc.weightx = 0;
         pnlTab.add(close, gbc);
@@ -933,18 +932,7 @@ public class TextEditor extends javax.swing.JFrame {
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             fileToOpen = fileChooser.getSelectedFile();
             openFile(fileToOpen);
-        }
-    }
-
-    private void tabbMouseDragged(java.awt.event.MouseEvent evt) {
-        mouseX = evt.getX();
-        mouseY = evt.getY();
-        if (mouseX >= 0 && mouseX <= 10) {
-            resize = true;
-        }
-        if (resize) {
-            System.out.println(mouseX);
-            tabb.setSize(tabb.getWidth() - (mouseX / 100), tabb.getHeight());
+            //isOpen(fileToOpen,fileToOpen.getName());
         }
     }
 
@@ -953,7 +941,6 @@ public class TextEditor extends javax.swing.JFrame {
             statusMsg.setText(text);
         }
         if (flag) {
-            System.out.println("its true..");
             ImageIcon img = new ImageIcon("img/loading.gif");
             System.out.println(img.getIconHeight());
             statusMsg.setText(text);
@@ -965,7 +952,6 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     DefaultMutableTreeNode addNodes(DefaultMutableTreeNode curTop, File dir, ArrayList<String> tempExes, ArrayList<String> tempSource) {
-        System.out.println("Once");
         String curPath = dir.getPath();
         DefaultMutableTreeNode curDir = new DefaultMutableTreeNode(curPath);
         if (curTop != null) { // should only be null at root
@@ -974,7 +960,7 @@ public class TextEditor extends javax.swing.JFrame {
         Vector ol = new Vector();
         String[] tmp = dir.list();
         for (int i = 0; i < tmp.length; i++) {
-            System.out.println(tmp[i]);
+            //System.out.println(tmp[i]);
 
             File f = new File(dir.getAbsolutePath() + "/" + tmp[i]);
             if (f.canExecute() && !tmp[i].endsWith(".o") && !f.isDirectory() && !tmp[i].contains(".")) {
@@ -1026,26 +1012,25 @@ public class TextEditor extends javax.swing.JFrame {
             projectSources.add(tempSource);
             MouseListener ml = new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
-                    System.out.println("Mouse pressed!");
+                    //System.out.println("Mouse pressed!");
                     int selRow = tree.getRowForLocation(e.getX(), e.getY());
                     TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
                     if (selRow != -1) {
                         if (e.getClickCount() == 1) {
-                            System.out.println("Single Click");
+                            //System.out.println("Single Click");
                             System.out.println(selPath);
 
                         } else if (e.getClickCount() == 2) {
-                            System.out.println("Double Click!");
+                            //System.out.println("Double Click!");
 
                             Object[] path = selPath.getPath();
                             String fPath = path[path.length - 2] + "/" + path[path.length - 1];
                             System.out.println(fPath);
                             File f = new File(fPath);
                             if (f.isFile()) {
-                                openFile(new File(fPath));
-                            } else {
-                                System.out.println("not a file");
-                            }
+                                File f1 = new File(fPath);
+                                isOpen(f1,f1.getName());
+                            } 
 
                         }
                     }
@@ -1063,18 +1048,19 @@ public class TextEditor extends javax.swing.JFrame {
         edit.getHighlighter().removeAllHighlights();
         DefaultHighlighter.DefaultHighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
         Element root = edit.getDocument().getDefaultRootElement();
-        
+
         int startOfLineOffset = root.getElement(lineNo - 1).getStartOffset();
         int stopOfLineOffset = root.getElement(lineNo).getStartOffset();
         edit.setCaretPosition(startOfLineOffset);
         try {
             edit.getHighlighter().addHighlight(startOfLineOffset, stopOfLineOffset, highlightPainter);
         } catch (BadLocationException ex) {
-            Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+            // Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     private void isOpen(File f, String title) {
+        System.out.println("Checking if file is open...");
         boolean fileOpen = false;
         int loc = 0;
         for (int i = 0; i < tabb.getComponentCount() - 1; i++) {
@@ -1089,25 +1075,25 @@ public class TextEditor extends javax.swing.JFrame {
             }
         }
         if (fileOpen) {
+            System.out.println("file is open at tab index " + loc);
             tabb.setSelectedIndex(loc);
         } else {
+            System.out.println("Opening file in a new tab");
             openFile(f);
         }
     }
 
     private void runConfiguration() {
-        System.out.println("Runing run config..");
+        System.out.println("Run configuration started");
         runConfigDialog = new JDialog();
         Dimension dim = new Dimension(350, 380);
         Dimension dimPre = new Dimension(700, 700);
-        //runConfigDialog.setMaximumSize(dim);
         runConfigDialog.setMinimumSize(dim);
         runConfigDialog.setPreferredSize(dimPre);
         runConfigDialog.setTitle("Run Configuration");
         JPanel runConfigPanel = new JPanel();
         JTextField args = new JTextField();
         JScrollPane scrolBar = new JScrollPane();
-        //BoxLayout bx = new BoxLayout(runConfigPanel,BoxLayout.Y_AXIS);
         runConfigPanel.setLayout(new GridBagLayout());
         runConfigDialog.add(runConfigPanel);
         JLabel project = new JLabel("Project Location: ");
@@ -1128,7 +1114,7 @@ public class TextEditor extends javax.swing.JFrame {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     String path = (String) e.getItem();
                     selectedPath = path;
-                    System.out.println("state changed: " + path);
+                    //System.out.println("state changed: " + path);
                     //get the arrayList
                     if (path.compareTo("All local files") == 0) {
                         allLocs.removeAllElements();
@@ -1139,7 +1125,7 @@ public class TextEditor extends javax.swing.JFrame {
                     } else {
                         for (int i = 0; i < projectExes.size(); i++) {
                             if (path.equals(projectExes.get(i).get(0))) {
-                                System.out.println("Found equal: " + projectExes.get(i).get(0));
+                                // System.out.println("Found equal: " + projectExes.get(i).get(0));
                                 allLocs.removeAllElements();
                                 for (int j = 0; j < allExes.size(); j++) {
                                     allLocs.addElement(allExes.get(j));
@@ -1167,7 +1153,7 @@ public class TextEditor extends javax.swing.JFrame {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Add here code...");
+                //System.out.println("Add here code...");
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -1185,7 +1171,7 @@ public class TextEditor extends javax.swing.JFrame {
                                 exceFile = (String) projectExes.get(i).get(selectedExeIndex + 1);
                             }
                         }
-                        System.out.println("run FIle: " + exceFile);
+                        System.out.println("Running file [" + exceFile + "]");
                         ar[3] = exceFile;
                         int i = 4;
                         while (st1.hasMoreTokens()) {
@@ -1231,7 +1217,7 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     private void Debug() {
-        System.out.println("Debug config..");
+        System.out.println("Starting Debug configuration..");
         debugConfigDialog = new JDialog();
         Dimension dim = new Dimension(400, 380);
         Dimension dimPre = new Dimension(700, 700);
@@ -1262,7 +1248,7 @@ public class TextEditor extends javax.swing.JFrame {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     String path = (String) e.getItem();
                     selectedPath = path;
-                    System.out.println("state changed: " + path);
+                    //System.out.println("state changed: " + path);
                     //get the arrayList
                     if (path.compareTo("Local source files") == 0) {
                         allLocs.removeAllElements();
@@ -1272,7 +1258,7 @@ public class TextEditor extends javax.swing.JFrame {
                     } else {
                         for (int i = 0; i < projectSources.size(); i++) {
                             if (path.equals(projectSources.get(i).get(0))) {
-                                System.out.println("Found equal: " + projectSources.get(i).get(0));
+                                //System.out.println("Found equal: " + projectSources.get(i).get(0));
                                 allLocs.removeAllElements();
                                 /*for (int j = 0; j < allExes.size(); j++) {
                                     allLocs.addElement(allExes.get(j));
@@ -1300,7 +1286,6 @@ public class TextEditor extends javax.swing.JFrame {
         submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //When debug button clicked
                 debug(projectSources, lineNo);
             }
         });
@@ -1346,20 +1331,7 @@ public class TextEditor extends javax.swing.JFrame {
 
     }
 
-    private void debugPrev() {
-        gdb.executeCommand("next");
-        System.out.println(gdb.readOutput());
-        gdb.executeCommand("where");
-        String output = gdb.readOutput();
-        output = output.substring(output.lastIndexOf(":") + 1, output.length() - 1);
-        System.out.println("line next: " + output);
-        hightLightLine(editor, Integer.parseInt(output));
-
-    }
-
     private void debug(ArrayList<ArrayList> projectSources, JTextField lineNo) {
-
-        //addding debug output tab 
         gdbOutput = new JEditorPane();
         debuggerComponent = new JScrollPane(gdbOutput);
         gdbOutput.setText("gdb started...");
@@ -1401,21 +1373,15 @@ public class TextEditor extends javax.swing.JFrame {
                 pathOfSource = (String) projectSources.get(i).get(selectedExeIndex + 1);
             }
         }
-        if(selectedPath == null){
-            pathOfSource = allCFiles.get(selectedExeIndex );
+        if (selectedPath == null) {
+            pathOfSource = allCFiles.get(selectedExeIndex);
         }
-        System.out.println("The file to debug: " + pathOfSource);
-        System.out.println("Start on line number: " + lineNo.getText());
+        //System.out.println("Debugging file : [" + pathOfSource+"]");
+
         String exceFileTemp = pathOfSource;
-        //Compile file
-        //String exceFileTemp = pathOfSource.substring(0, pathOfSource.lastIndexOf('/') + 1) + pathOfSource.substring(pathOfSource.lastIndexOf('/') + 1, pathOfSource.length() - 2) + ".o";
-        //String title = pathOfSource.substring(pathOfSource.lastIndexOf('/') + 1, pathOfSource.length() - 2);
-        //System.out.println("Saving at: " + exceFileTemp);
-        //compile(pathOfSource, exceFileTemp);
-        System.out.println("Running commands..");
         gdb = new ProcessCom();
-        File f1 = new File(pathOfSource+".c");
-        System.out.println("source: " + f1.getAbsolutePath());
+        File f1 = new File(pathOfSource + ".c");
+        System.out.println("Debugging file : [" + f1.getAbsolutePath() + "]");
         System.out.println("Name: " + f1.getName());
         isOpen(f1, f1.getName());
         gdb.executeCommand("gdb " + exceFileTemp);
@@ -1424,29 +1390,27 @@ public class TextEditor extends javax.swing.JFrame {
         if (lineNo.getText().equalsIgnoreCase("")) {
             System.out.println("No line number provide");
             gdb.executeCommand("b main");
-
             String output = gdb.readOutput();
+            System.out.println("$" + output);
             gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-            System.out.println("$test: " + output);
-            System.out.println("last index " + output.lastIndexOf("line"));
-            System.out.println("" + output.substring(output.lastIndexOf("line") + 5, output.length() - 2));
             lineNumber = Integer.parseInt(output.substring(output.lastIndexOf("line") + 5, output.length() - 2));
             System.out.println("The line number " + lineNumber);
 
         } else {
+            System.out.println("Start on line number = " + lineNo.getText());
             lineNumber = Integer.parseInt(lineNo.getText());
             gdb.executeCommand("b main");
             String output = gdb.readOutput();
+            System.out.println("$" + output);
             gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-            System.out.println(output);
+            System.out.println("$" + output);
         }
         gdb.executeCommand("run");
         String output = gdb.readOutput();
+        System.out.println("$" + output);
         gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-        System.out.println(output);
+        System.out.println("$" + output);
         hightLightLine(editor, lineNumber);
-
-        //tabb.setSelectedIndex(index);
     }
 
     public static void main(String args[]) {
@@ -1535,4 +1499,5 @@ public class TextEditor extends javax.swing.JFrame {
     private JEditorPane gdbOutput;
     private JScrollPane debuggerComponent;
     private JDialog runConfigDialog;
+    private Logger IDELogger;
 }
