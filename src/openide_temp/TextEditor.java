@@ -636,8 +636,8 @@ public class TextEditor extends javax.swing.JFrame {
             f = title1.getText();
             JLabel path = (JLabel) p.getComponent(1);
             filePath = path.getText();
-            out = filePath.substring(0, filePath.length() - 2) + ".o";
-            String exceFileTemp = filePath.substring(0, filePath.lastIndexOf('/') + 1) + "./" + filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length() - 2) + ".o";
+            out = filePath.substring(0, filePath.length() - 2);
+            String exceFileTemp = filePath.substring(0, filePath.lastIndexOf('/') + 1) + "./" + filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length() - 2);
             exceFile = exceFileTemp.replace(" ", "\\ ");
 
         } else {
@@ -657,6 +657,7 @@ public class TextEditor extends javax.swing.JFrame {
                     output = comand.Execute(arr);
                     if (output.equals("")) {
                         statusMsg.setText("Status: Code compile without any errors.");
+                        allCFiles.add(outtemp);
                         allExes.add(outtemp);
                     } else {
 
@@ -792,7 +793,6 @@ public class TextEditor extends javax.swing.JFrame {
     public void openFile(File f) {
         System.out.println("opening file");
         File fileToOpen = null;
-        allCFiles.add(f.getAbsolutePath());
         JEditorPane codeEditor = new JEditorPane();
         editor = codeEditor;
         JScrollPane scroll = new JScrollPane(codeEditor);
@@ -981,7 +981,7 @@ public class TextEditor extends javax.swing.JFrame {
                 tempExes.add(dir.getAbsolutePath() + "/./" + tmp[i]);
             }
 
-            if (tmp[i].endsWith(".c")) {
+            if (f.canExecute() && !tmp[i].endsWith(".o") && !f.isDirectory() && !tmp[i].contains(".")) {
                 tempSource.add(dir.getAbsolutePath() + "/" + tmp[i]);
             }
             ol.addElement(tmp[i]);
@@ -1059,11 +1059,14 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     private void hightLightLine(JEditorPane edit, int lineNo) {
+        edit.setCaretPosition(PROPERTIES);
         edit.getHighlighter().removeAllHighlights();
         DefaultHighlighter.DefaultHighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
         Element root = edit.getDocument().getDefaultRootElement();
+        
         int startOfLineOffset = root.getElement(lineNo - 1).getStartOffset();
         int stopOfLineOffset = root.getElement(lineNo).getStartOffset();
+        edit.setCaretPosition(startOfLineOffset);
         try {
             edit.getHighlighter().addHighlight(startOfLineOffset, stopOfLineOffset, highlightPainter);
         } catch (BadLocationException ex) {
@@ -1271,9 +1274,9 @@ public class TextEditor extends javax.swing.JFrame {
                             if (path.equals(projectSources.get(i).get(0))) {
                                 System.out.println("Found equal: " + projectSources.get(i).get(0));
                                 allLocs.removeAllElements();
-                                for (int j = 0; j < allExes.size(); j++) {
+                                /*for (int j = 0; j < allExes.size(); j++) {
                                     allLocs.addElement(allExes.get(j));
-                                }
+                                }*/
                                 ArrayList<String> temp = projectSources.get(i);
                                 for (int j = 1; j < temp.size(); j++) {
                                     allLocs.addElement(temp.get(j).substring(temp.get(j).lastIndexOf('/') + 1, temp.get(j).length()));
@@ -1403,15 +1406,15 @@ public class TextEditor extends javax.swing.JFrame {
         }
         System.out.println("The file to debug: " + pathOfSource);
         System.out.println("Start on line number: " + lineNo.getText());
-
+        String exceFileTemp = pathOfSource;
         //Compile file
-        String exceFileTemp = pathOfSource.substring(0, pathOfSource.lastIndexOf('/') + 1) + pathOfSource.substring(pathOfSource.lastIndexOf('/') + 1, pathOfSource.length() - 2) + ".o";
-        String title = pathOfSource.substring(pathOfSource.lastIndexOf('/') + 1, pathOfSource.length() - 2);
-        System.out.println("Saving at: " + exceFileTemp);
-        compile(pathOfSource, exceFileTemp);
+        //String exceFileTemp = pathOfSource.substring(0, pathOfSource.lastIndexOf('/') + 1) + pathOfSource.substring(pathOfSource.lastIndexOf('/') + 1, pathOfSource.length() - 2) + ".o";
+        //String title = pathOfSource.substring(pathOfSource.lastIndexOf('/') + 1, pathOfSource.length() - 2);
+        //System.out.println("Saving at: " + exceFileTemp);
+        //compile(pathOfSource, exceFileTemp);
         System.out.println("Running commands..");
         gdb = new ProcessCom();
-        File f1 = new File(pathOfSource);
+        File f1 = new File(pathOfSource+".c");
         System.out.println("source: " + f1.getAbsolutePath());
         System.out.println("Name: " + f1.getName());
         isOpen(f1, f1.getName());
