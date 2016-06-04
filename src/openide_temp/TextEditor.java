@@ -99,6 +99,7 @@ public class TextEditor extends javax.swing.JFrame {
 
         CSyntaxKit.initKit();
         initComponents();
+        savefile = new SaveFile(tabb,exceFile,allCFiles,comand,allExes,statusMsg);
 
     }
 
@@ -149,7 +150,7 @@ public class TextEditor extends javax.swing.JFrame {
         stop = new JButton();
         printValue = new JTextField();
         printBtn = new JButton("Value");
-        savefile = new SaveFile(tabb);
+        
 
         /* Opening a waring dialog when user tries to create a new file which is already present */
         warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
@@ -247,7 +248,7 @@ public class TextEditor extends javax.swing.JFrame {
         compileIcon.setFocusPainted(false);
         compileIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                compile(null, null);
+                savefile.compile(null, null);
             }
         });
 
@@ -466,7 +467,7 @@ public class TextEditor extends javax.swing.JFrame {
         compile.setText("Compile");
         compile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                compile(null, null);
+                savefile.compile(null, null);
             }
         });
         projectMenu.add(compile);
@@ -559,134 +560,6 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    /*
-    public void save() {
-        int i = tabb.getSelectedIndex();
-        if (!(tabb.getTabCount() == 0) && !(tabb.getTitleAt(i).equals("Output"))) {
-            try {
-
-                JPanel p = (JPanel) tabb.getTabComponentAt(i);
-                JLabel saveStatus = (JLabel) p.getComponent(2);
-                if (saveStatus.getText().compareToIgnoreCase("false") == 0) {
-                    saveStatus.setText("true");
-                    JLabel title = (JLabel) p.getComponent(0);
-                    String f = title.getText();
-                    f = f.replace("*", "");
-                    JLabel path = (JLabel) p.getComponent(1);
-                    JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
-                    JViewport viewport = s.getViewport();
-                    JEditorPane a = (JEditorPane) viewport.getView();
-                    File file = new File(path.getText());
-                    System.out.println("Saving file [" + path.getText() + "]");
-                    try (FileWriter writer = new FileWriter(file)) {
-                        writer.write(a.getText());
-                        writer.flush();
-                    }
-                    title.setText(f);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.println("File saved");
-
-        }
-    }
-*/
-    public void compile(String source, String outfile) {
-        boolean compileFile = true;
-        System.out.println("Compiling...");
-        String out = "", filePath = "";
-        OutputPanel.removeAll();
-        String f;
-        JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-        JLabel lbl = (JLabel) pnl.getComponent(2);
-        if (lbl.getText().compareTo("false") == 0) {
-            savefile.save();
-        }
-        int i = tabb.getSelectedIndex();
-        if (source != null) {
-            System.out.println("Compiling source file " + source);
-            out = outfile;
-            filePath = source;
-            System.out.println("Excutable file stored at loc: " + out);
-        } else if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(i).equals("Output"))) {
-            System.out.println("Compiling tab file");
-            i = tabb.getSelectedIndex();
-            compiledIndex = i;
-            JPanel p = (JPanel) tabb.getTabComponentAt(i);
-            JLabel title1 = (JLabel) p.getComponent(0);
-            f = title1.getText();
-            JLabel path = (JLabel) p.getComponent(1);
-            filePath = path.getText();
-            out = filePath.substring(0, filePath.length() - 2);
-            String exceFileTemp = filePath.substring(0, filePath.lastIndexOf('/') + 1) + "./" + filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length() - 2);
-            exceFile = exceFileTemp.replace(" ", "\\ ");
-            System.out.println("Compiling source file " + filePath);
-            System.out.println("Excutable file stored at loc: " + exceFile);
-        } else {
-            compileFile = false;
-        }
-        if (compileFile) {
-            final String outtemp = out;
-            final String filePathTemp = filePath;
-            System.out.println("Ready for compiling...");
-            System.out.println("Compilation output: ");
-            changeStatus("Compiling", true);
-
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    String arr[] = {"cc", filePathTemp, "-o", outtemp, "-g", "-g3"};
-                    output = comand.Execute(arr);
-                    if (output.equals("")) {
-                        System.out.println("File compiled without errors.");
-                        statusMsg.setText("Status: Code compile without any errors.");
-                        allCFiles.add(outtemp.replace(" ", "\\ "));
-                        allExes.add(outtemp.replace(" ", "\\ "));
-                    } else {
-                        System.out.println("Error: file compiled with one or more errors");
-                        JButton close = new JButton("x");
-                        close.setForeground(Color.RED);
-                        close.setBorderPainted(false);
-                        GridBagConstraints gbc = new GridBagConstraints();
-                        gbc.gridx = 0;
-                        gbc.gridy = 0;
-                        gbc.weightx = 1;
-                        JPanel pnlTab = new JPanel(new GridBagLayout());
-                        pnlTab.setOpaque(false);
-                        JLabel title = new JLabel("Output:");
-                        pnlTab.add(title, gbc);
-                        gbc.gridx++;
-                        gbc.weightx = 0;
-                        pnlTab.add(close, gbc);
-                        tabb.add(OutputPanel);
-                        int index = tabb.indexOfComponent(OutputPanel);
-                        close.addActionListener(new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                JButton b = (JButton) e.getSource();
-                                JPanel parent = (JPanel) b.getParent();
-                                int i = tabb.indexOfTabComponent(parent);
-                                if (i != -1) {
-                                    tabb.remove(i);
-                                }
-                            }
-
-                        });
-
-                        tabb.setTabComponentAt(index, pnlTab);
-                        close.setName("" + index);
-                        tabb.setSelectedIndex(index);
-                    }
-
-                    changeStatus("Status: Compiling done!", false);
-                    isCompiled = true;
-                }
-            });
-            t.start();
-        }
-    }
-
     public static void displayOutput(String line) {
         JLabel lab = new JLabel();
         if (line.contains("error") || line.contains("warning")) {
@@ -765,7 +638,7 @@ public class TextEditor extends javax.swing.JFrame {
 
         } else {
             System.out.println("Compiling file..");
-            compile(null, null);
+            savefile.compile(null, null);
             if (isCompiled) {
                 System.out.println("File compiled successfully");
                 Thread t1 = new Thread(new Runnable() {
@@ -957,21 +830,6 @@ public class TextEditor extends javax.swing.JFrame {
         }
     }
 
-    private void changeStatus(String text, boolean flag) {
-        if (text != null) {
-            statusMsg.setText(text);
-        }
-        if (flag) {
-            ImageIcon img = new ImageIcon("img/loading.gif");
-            System.out.println(img.getIconHeight());
-            statusMsg.setText(text);
-            statusMsg.setIcon(img);
-        } else {
-            statusMsg.setText(statusMsg.getText());
-            statusMsg.setIcon(null);
-        }
-    }
-    
     private void hightLightLine(JEditorPane edit, int lineNo) {
         edit.setCaretPosition(PROPERTIES);
         edit.getHighlighter().removeAllHighlights();

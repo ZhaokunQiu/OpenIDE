@@ -149,7 +149,7 @@ public class Debug extends TextEditor{
         //Compile file
         String exceFileTemp = pathOfSource.substring(0, pathOfSource.lastIndexOf('/') + 1) + pathOfSource.substring(pathOfSource.lastIndexOf('/') + 1, pathOfSource.length() - 2) + ".o";
         System.out.println("Saving at: "+exceFileTemp);
-        compile(pathOfSource,exceFileTemp);
+        //compile(pathOfSource,exceFileTemp);
         System.out.println("Running commands..");
         ProcessCom gdb = new ProcessCom();
         gdb.executeCommand("gdb "+exceFileTemp);
