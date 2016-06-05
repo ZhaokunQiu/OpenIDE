@@ -32,14 +32,12 @@ import static openide_temp.TextEditor.compiledIndex;
 public class SaveFile {
 
     private JTabbedPane tabb;
-    private String exceFile;
     private ArrayList<String> allCFiles, allExes;
     private ExecuteShellComand comand;
     private JLabel statusMsg;
 
-    SaveFile(JTabbedPane tab, String exe, ArrayList allC, ExecuteShellComand cmd, ArrayList allE, JLabel msg) {
+    SaveFile(JTabbedPane tab, ArrayList allC, ExecuteShellComand cmd, ArrayList allE, JLabel msg) {
         tabb = tab;
-        exceFile  = exe;
         allCFiles = allC;
         comand = cmd;
         allExes = allE;
@@ -47,46 +45,42 @@ public class SaveFile {
     }
 
     public void compile(String source, String outfile) {
+        String exceFile = "";
         boolean compileFile = true;
         System.out.println("Compiling...");
         String out = "", filePath = "";
         OutputPanel.removeAll();
-        String f;
         JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
         JLabel lbl = (JLabel) pnl.getComponent(2);
         if (lbl.getText().compareTo("false") == 0) {
             save();
-        } 
-        int i = tabb.getSelectedIndex();
+        }
         if (source != null) {
             System.out.println("Compiling source file " + source);
             out = outfile;
             filePath = source;
             System.out.println("Excutable file stored at loc: " + out);
-        } else if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(i).equals("Output"))) {
+        } else if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(tabb.getSelectedIndex()).equals("Output"))) {
             System.out.println("Compiling tab file");
-            i = tabb.getSelectedIndex();
-            compiledIndex = i;
-            JPanel p = (JPanel) tabb.getTabComponentAt(i);
-            JLabel title1 = (JLabel) p.getComponent(0);
-            f = title1.getText();
+            JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
             JLabel path = (JLabel) p.getComponent(1);
             filePath = path.getText();
-            out = filePath.substring(0, filePath.length() - 2);
+            out = filePath.substring(0, filePath.length() - 2).replace(" ", "\\ ");
             String exceFileTemp = filePath.substring(0, filePath.lastIndexOf('/') + 1) + "./" + filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length() - 2);
+            exceFileTemp = exceFileTemp.replace(" ", "\\");
             exceFile = exceFileTemp.replace(" ", "\\ ");
             System.out.println("Compiling source file " + filePath);
             System.out.println("Excutable file stored at loc: " + exceFile);
         } else {
             compileFile = false;
         }
+        final String exceFileTemp = exceFile;
         if (compileFile) {
             final String outtemp = out;
             final String filePathTemp = filePath;
             System.out.println("Ready for compiling...");
             System.out.println("Compilation output: ");
-            //changeStatus("Compiling", true);
-
+            changeStatus("Compiling", true);
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -95,9 +89,22 @@ public class SaveFile {
                     if (output.equals("")) {
                         System.out.println("File compiled without errors.");
                         statusMsg.setText("Status: Code compile without any errors.");
-                        allCFiles.add(outtemp.replace(" ", "\\ "));
-                        allExes.add(outtemp.replace(" ", "\\ "));
+                        if (!allCFiles.contains(outtemp.replace(" ", "\\ "))) {
+                            allCFiles.add(outtemp.replace(" ", "\\ "));
+                        }
+                        if (!allExes.contains(outtemp.replace(" ", "\\ "))) {
+                            allExes.add(outtemp.replace(" ", "\\ "));
+                        }
+                        JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+                        JLabel lbl = (JLabel) pnl.getComponent(3);
+                        lbl.setText("true");
+                        lbl = (JLabel) pnl.getComponent(4);
+                        lbl.setText(outtemp);
+                        lbl = (JLabel) pnl.getComponent(5);
+                        lbl.setText(exceFileTemp);
+                        
                     } else {
+                        //Adding output panel
                         System.out.println("Error: file compiled with one or more errors");
                         JButton close = new JButton("x");
                         close.setForeground(Color.RED);
@@ -132,15 +139,13 @@ public class SaveFile {
                         close.setName("" + index);
                         tabb.setSelectedIndex(index);
                     }
-
                     changeStatus("Status: Compiling done!", false);
-                    //isCompiled = true;
                 }
             });
             t.start();
         }
     }
-    
+
     private void changeStatus(String text, boolean flag) {
         if (text != null) {
             statusMsg.setText(text);

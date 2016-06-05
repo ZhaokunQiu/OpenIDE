@@ -62,8 +62,8 @@ import jsyntaxpane.syntaxkits.CSyntaxKit;
 
 public class TextEditor extends javax.swing.JFrame {
 
-    public boolean projectTreeVisable = true, resize = false, isCompiled = false;
-    public String exceFile = "", output, selectedPath;
+    public boolean projectTreeVisable = true, resize = false;
+    public String  output, selectedPath;
     public static JPanel OutputPanel;
     public ExecuteShellComand comand;
     public static int compiledIndex, lineNumber, selectedExeIndex;
@@ -72,8 +72,7 @@ public class TextEditor extends javax.swing.JFrame {
     public ArrayList<ArrayList> projectExes, projectSources;
     public ProjectTree projectTreeObj;
     public SaveFile savefile;
-    
-    
+
     public TextEditor() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -99,7 +98,7 @@ public class TextEditor extends javax.swing.JFrame {
 
         CSyntaxKit.initKit();
         initComponents();
-        savefile = new SaveFile(tabb,exceFile,allCFiles,comand,allExes,statusMsg);
+        savefile = new SaveFile(tabb,allCFiles, comand, allExes, statusMsg);
 
     }
 
@@ -150,7 +149,7 @@ public class TextEditor extends javax.swing.JFrame {
         stop = new JButton();
         printValue = new JTextField();
         printBtn = new JButton("Value");
-        
+
 
         /* Opening a waring dialog when user tries to create a new file which is already present */
         warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
@@ -582,6 +581,7 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     public void run() {
+        System.out.println("Running file...");
         savefile.save();
         int selIndex = tabb.getSelectedIndex();
         JPanel p = (JPanel) tabb.getTabComponentAt(selIndex);
@@ -604,7 +604,6 @@ public class TextEditor extends javax.swing.JFrame {
                         theCommand += "make" + "\n";
                         theCommand += "make install" + "\n";
                         theCommand += "echo 'Done building...'" + "\n";
-                        //theCommand += "mosquitto" + "\n";
                         System.out.println("Saving shellscript for make at /home/castor/Desktop/scriptMake.sh");
                         File scriptFile = new File("/home/castor/Desktop/scriptMake.sh");
 
@@ -625,32 +624,31 @@ public class TextEditor extends javax.swing.JFrame {
                                 System.out.println("Make executed successfully");
                                 comand.Execute(arr);
                             }
-
                         });
                         t.start();
-
                     }
-
                 });
                 t.start();
-
             }
-
         } else {
-            System.out.println("Compiling file..");
-            savefile.compile(null, null);
-            if (isCompiled) {
-                System.out.println("File compiled successfully");
-                Thread t1 = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        System.out.println("Ready to run exe");
-                        String arr[] = {"xterm", "-hold", "-e", exceFile};
-                        comand.Execute(arr);
-                    }
-                });
-                t1.start();
+            //compiling file
+            JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+            JLabel lbl = (JLabel) pnl.getComponent(3);
+            if (lbl.getText().compareTo("true") != 0) {
+                savefile.compile(null, null);
             }
+             lbl = (JLabel) pnl.getComponent(5);
+             final String exe = lbl.getText();
+            System.out.println("File compiled successfully");
+            Thread t1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Ready to run exe");
+                    String arr[] = {"xterm", "-hold", "-e", exe};
+                    comand.Execute(arr);
+                }
+            });
+            t1.start();
         }
     }
 
@@ -808,7 +806,16 @@ public class TextEditor extends javax.swing.JFrame {
             pnlTab.add(path, gbc);
             JLabel saveStatus = new JLabel("false");
             saveStatus.setVisible(false);
-            pnlTab.add(saveStatus);
+            pnlTab.add(saveStatus, gbc);
+            JLabel isCompiled = new JLabel("false");
+            isCompiled.setVisible(false);
+            pnlTab.add(isCompiled, gbc);
+            JLabel outputFile = new JLabel("null");
+            outputFile.setVisible(false);
+            pnlTab.add(outputFile, gbc);
+            JLabel exeLink = new JLabel("null");
+            exeLink.setVisible(false);
+            pnlTab.add(exeLink, gbc);
             gbc.gridx++;
             gbc.weightx = 0;
             pnlTab.add(close, gbc);
@@ -920,6 +927,7 @@ public class TextEditor extends javax.swing.JFrame {
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        String exceFile = "";
                         String parameters = args.getText();
                         StringTokenizer st1 = new StringTokenizer(parameters);
                         int count = st1.countTokens();
