@@ -81,7 +81,6 @@ public class Debugger {
                 //adding gdb next code here
                 debugNext();
             }
-
         });
 
         stop.setIcon(new ImageIcon(getClass().getResource("/resources/stop.png")));

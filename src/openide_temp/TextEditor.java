@@ -46,7 +46,7 @@ import jsyntaxpane.syntaxkits.CSyntaxKit;
 
 public class TextEditor extends javax.swing.JFrame {
 
-    public boolean projectTreeVisable = true, resize = false,paint = false;
+    public boolean projectTreeVisable = true, resize = false;
     public String output, selectedPath;
     public static JPanel OutputPanel;
     public ExecuteShellComand comand;
@@ -90,8 +90,6 @@ public class TextEditor extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     private void initComponents() {
 
-        warningDialog = new javax.swing.JDialog();
-        warningPanel = new javax.swing.JPanel();
         warningText = new javax.swing.JLabel();
         warningCancelBtn = new javax.swing.JButton();
         runIconButton = new javax.swing.JButton();
@@ -130,53 +128,6 @@ public class TextEditor extends javax.swing.JFrame {
         runConfig = new JMenuItem();
         debugConfig = new JMenuItem();
 
-        /* Opening a waring dialog when user tries to create a new file which is already present */
-        warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
-        warningPanel.setMaximumSize(new java.awt.Dimension(165, 97));
-        warningPanel.setMinimumSize(new java.awt.Dimension(165, 97));
-        warningText.setText("File already Exists. ");
-        warningCancelBtn.setText("Cancel");
-        warningCancelBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                warningDialog.setVisible(false);
-            }
-        });
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(warningPanel);
-        warningPanel.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGap(58, 58, 58)
-                                        .addComponent(warningCancelBtn))
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGap(25, 25, 25)
-                                        .addComponent(warningText)))
-                        .addContainerGap(24, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap(15, Short.MAX_VALUE)
-                        .addComponent(warningText, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(warningCancelBtn)
-                        .addContainerGap())
-        );
-
-        javax.swing.GroupLayout paraLayout = new javax.swing.GroupLayout(warningDialog.getContentPane());
-        warningDialog.getContentPane().setLayout(paraLayout);
-        paraLayout.setHorizontalGroup(
-                paraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, paraLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(warningPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        paraLayout.setVerticalGroup(
-                paraLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(warningPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
 
         /* End of warning dialog */
         runIconButton.setText("Run");
@@ -278,8 +229,6 @@ public class TextEditor extends javax.swing.JFrame {
 
         projectDisplay.add(new JTree(projectTreeObj.addNodes(null, new File("."), new ArrayList(), new ArrayList())), gridBag);
 
-        //projectDisplay.add(new JLabel("Open Projects"));
-        //projectTree.setBackground(Color.LIGHT_GRAY);
         covePanel.add(projectTree, coveLay.WEST);
         getContentPane().add(covePanel);
         //resizing project tree
@@ -464,7 +413,7 @@ public class TextEditor extends javax.swing.JFrame {
                     //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
-                warningDialog.setVisible(true);
+                ideOperation.changeStatus("Error: File already exists", false);
             }
         }
     }
@@ -551,12 +500,12 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JButton runIconButton;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar menuOptions;
-    private javax.swing.JPanel warningPanel;
+    //private javax.swing.JPanel warningPanel;
     private javax.swing.JMenuItem newFile;
     private javax.swing.JButton newIcon;
     private javax.swing.JMenuItem open;
     private javax.swing.JButton openIcon;
-    private javax.swing.JDialog warningDialog;
+    //private javax.swing.JDialog warningDialog;
     private javax.swing.JLabel warningText;
     private javax.swing.JMenuItem paste;
     private javax.swing.JMenu projectMenu;
@@ -577,11 +526,6 @@ public class TextEditor extends javax.swing.JFrame {
     private JMenuItem debugConfig;
     public JPanel projectDisplay;
     public GridBagConstraints gridBag;
-    private JDialog debugConfigDialog;
-    private JEditorPane editor;
-    private ProcessCom gdb;
-    private JEditorPane gdbOutput;
-    private JScrollPane debuggerComponent;
     private Logger IDELogger;
     private Debugger debug;
     protected static TextEditor texteditor;

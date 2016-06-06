@@ -153,7 +153,7 @@ public class IDEOperation {
         }
     }
 
-    private void changeStatus(String text, boolean flag) {
+    protected void changeStatus(String text, boolean flag) {
         if (text != null) {
             statusMsg.setText(text);
         }
@@ -168,7 +168,7 @@ public class IDEOperation {
         }
     }
 
-    public void save() {
+    protected void save() {
         int i = tabb.getSelectedIndex();
         if (!(tabb.getTabCount() == 0) && !(tabb.getTitleAt(i).equals("Output"))) {
             try {
@@ -200,7 +200,7 @@ public class IDEOperation {
         }
     }
 
-    public JEditorPane openFile(File f) {
+    protected JEditorPane openFile(File f) {
         String PathTemp = f.getAbsolutePath();
         System.out.println("Checking if file [" + PathTemp + "] is open");
         boolean fileOpen = false;
