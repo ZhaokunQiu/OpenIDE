@@ -56,14 +56,12 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Element;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 import jsyntaxpane.syntaxkits.CSyntaxKit;
 
 public class TextEditor extends javax.swing.JFrame {
 
     public boolean projectTreeVisable = true, resize = false;
-    public String  output, selectedPath;
+    public String output, selectedPath;
     public static JPanel OutputPanel;
     public ExecuteShellComand comand;
     public static int compiledIndex, lineNumber, selectedExeIndex;
@@ -98,7 +96,7 @@ public class TextEditor extends javax.swing.JFrame {
 
         CSyntaxKit.initKit();
         initComponents();
-        savefile = new SaveFile(tabb,allCFiles, comand, allExes, statusMsg);
+        savefile = new SaveFile(tabb, allCFiles, comand, allExes, statusMsg);
 
     }
 
@@ -549,7 +547,7 @@ public class TextEditor extends javax.swing.JFrame {
             if (!fileToSave.exists()) {
                 try {
                     fileToSave.createNewFile();
-                    openFile(fileToSave);
+                    savefile.openFile(fileToSave);
                 } catch (IOException ex) {
                     //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -637,8 +635,8 @@ public class TextEditor extends javax.swing.JFrame {
             if (lbl.getText().compareTo("true") != 0) {
                 savefile.compile(null, null);
             }
-             lbl = (JLabel) pnl.getComponent(5);
-             final String exe = lbl.getText();
+            lbl = (JLabel) pnl.getComponent(5);
+            final String exe = lbl.getText();
             System.out.println("File compiled successfully");
             Thread t1 = new Thread(new Runnable() {
                 @Override
@@ -651,180 +649,7 @@ public class TextEditor extends javax.swing.JFrame {
             t1.start();
         }
     }
-
-    public void openFile(File f) {
-        String PathTemp = f.getAbsolutePath();
-        System.out.println("Checking if file is open...");
-        boolean fileOpen = false;
-        int loc = 0;
-        for (int i = 0; i < tabb.getComponentCount() - 1; i++) {
-            JPanel panel = (JPanel) tabb.getTabComponentAt(i);
-            JLabel path = (JLabel) panel.getComponent(1);
-            if (PathTemp.compareTo(path.getText()) == 0) {
-                fileOpen = true;
-                loc = i;
-                JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
-                JViewport viewport = s.getViewport();
-                editor = (JEditorPane) viewport.getView();
-            }
-        }
-        if (fileOpen) {
-            System.out.println("file is open at tab index " + loc);
-            tabb.setSelectedIndex(loc);
-        } else {
-            System.out.println("Opening file in a new tab");
-            System.out.println("Opening a new file");
-            File fileToOpen = null;
-            JEditorPane codeEditor = new JEditorPane();
-            editor = codeEditor;
-            JScrollPane scroll = new JScrollPane(codeEditor);
-            codeEditor.setContentType("text/java");
-            String code = null;
-            BufferedReader br = null;
-            try {
-                fileToOpen = f;
-                br = new BufferedReader(new FileReader(fileToOpen.getAbsolutePath()));
-                try {
-                    StringBuilder sb = new StringBuilder();
-                    String line = br.readLine();
-
-                    while (line != null) {
-                        sb.append(line);
-                        sb.append(System.lineSeparator());
-                        line = br.readLine();
-                    }
-                    code = sb.toString();
-
-                } catch (IOException ex) {
-                    //Logger.getLogger(TextEditor.class
-                    // .getName()).log(Level.SEVERE, null, ex);
-                } finally {
-                    try {
-                        br.close();
-
-                    } catch (IOException ex) {
-                        //Logger.getLogger(TextEditor.class
-                        // .getName()).log(Level.SEVERE, null, ex);
-
-                    }
-                }
-            } catch (FileNotFoundException ex) {
-                //Logger.getLogger(TextEditor.class
-                // .getName()).log(Level.SEVERE, null, ex);
-            } finally {
-                try {
-                    if (br != null) {
-                        br.close();
-
-                    }
-                } catch (IOException ex) {
-                    //Logger.getLogger(TextEditor.class
-                    //  .getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            scroll.setPreferredSize(new Dimension(260, 85));
-
-            scroll.setMaximumSize(new Dimension(2147483647, 2147483647));
-            scroll.setMinimumSize(new Dimension(0, 17));
-
-            codeEditor.getDocument().addDocumentListener(new DocumentListener() {
-
-                @Override
-                public void changedUpdate(DocumentEvent de) {
-                    JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-                    JLabel saveStatus = (JLabel) p.getComponent(2);
-                    saveStatus.setText("false");
-                    changeTitle();
-
-                }
-
-                @Override
-                public void insertUpdate(DocumentEvent de) {
-                    JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-                    JLabel saveStatus = (JLabel) p.getComponent(2);
-                    saveStatus.setText("false");
-                    changeTitle();
-                }
-
-                @Override
-                public void removeUpdate(DocumentEvent de) {
-                    JPanel p = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-                    JLabel saveStatus = (JLabel) p.getComponent(2);
-                    saveStatus.setText("false");
-                    changeTitle();
-                }
-
-                public void changeTitle() {
-                    System.out.println("File changed");
-                    int i = tabb.getSelectedIndex();
-                    JPanel panel = (JPanel) tabb.getTabComponentAt(i);
-                    JLabel title1 = (JLabel) panel.getComponent(0);
-                    JLabel saveStatus = (JLabel) panel.getComponent(2);
-                    if (saveStatus.getText().compareToIgnoreCase("false") == 0) {
-                        System.out.println("No star");
-                        String title = title1.getText();
-                        if (title.charAt(0) != '*') {
-                            System.out.println("adding star..");
-                            title = "*" + title;
-                            title1.setText(title);
-                        }
-                    }
-                }
-            });
-
-            tabb.add(scroll);
-            int i = tabb.getTabCount();
-            tabb.setSelectedIndex(i - 1);
-            JPanel pnlTab = new JPanel(new GridBagLayout());
-            pnlTab.setOpaque(false);
-            JLabel title = new JLabel(fileToOpen.getName());
-            JButton close = new JButton("x");
-            close.setBorderPainted(false);
-            close.setForeground(Color.red);
-            close.setFocusPainted(false);
-            close.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    JButton b = (JButton) e.getSource();
-                    JPanel parent = (JPanel) b.getParent();
-                    int i = tabb.indexOfTabComponent(parent);
-                    if (i != -1) {
-                        tabb.remove(i);
-                    }
-                }
-            });
-            System.out.println("Opening file [" + fileToOpen + "]");
-            System.out.println("File name: " + fileToOpen.getName());
-            System.out.println("Tab count = " + tabb.getTabCount());
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            pnlTab.add(title, gbc);
-            gbc.gridx++;
-            JLabel path = new JLabel(fileToOpen.getAbsolutePath());
-            path.setVisible(false);
-            pnlTab.add(path, gbc);
-            JLabel saveStatus = new JLabel("false");
-            saveStatus.setVisible(false);
-            pnlTab.add(saveStatus, gbc);
-            JLabel isCompiled = new JLabel("false");
-            isCompiled.setVisible(false);
-            pnlTab.add(isCompiled, gbc);
-            JLabel outputFile = new JLabel("null");
-            outputFile.setVisible(false);
-            pnlTab.add(outputFile, gbc);
-            JLabel exeLink = new JLabel("null");
-            exeLink.setVisible(false);
-            pnlTab.add(exeLink, gbc);
-            gbc.gridx++;
-            gbc.weightx = 0;
-            pnlTab.add(close, gbc);
-            tabb.setTabComponentAt(i - 1, pnlTab);
-            codeEditor.setText(code);
-            revalidate();
-        }
-    }
-
+    
     public void open() {
         File fileToOpen = null;
         JFileChooser fileChooser = new JFileChooser();
@@ -832,7 +657,7 @@ public class TextEditor extends javax.swing.JFrame {
         int userSelection = fileChooser.showSaveDialog(this);
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             fileToOpen = fileChooser.getSelectedFile();
-            openFile(fileToOpen);
+            savefile.openFile(fileToOpen);
             //isOpen(fileToOpen,fileToOpen.getName());
         }
     }
@@ -1103,6 +928,24 @@ public class TextEditor extends javax.swing.JFrame {
     }
 
     private void debug(ArrayList<ArrayList> projectSources, JTextField lineNo) {
+        int lineNumber = 0;
+        String pathOfSource = "";
+        for (int i = 0; i < projectSources.size(); i++) {
+            if (projectSources.get(i).get(0).equals(selectedPath)) {
+                pathOfSource = (String) projectSources.get(i).get(selectedExeIndex + 1);
+            }
+        }
+        if (selectedPath == null) {
+            pathOfSource = allCFiles.get(selectedExeIndex);
+        }
+        //System.out.println("Debugging file : [" + pathOfSource+"]");
+
+        String exceFileTemp = pathOfSource;
+        gdb = new ProcessCom();
+        File f1 = new File(pathOfSource + ".c");
+        System.out.println("Debugging file : [" + f1.getAbsolutePath() + "]");
+        System.out.println("Name: " + f1.getName());
+        editor = savefile.openFile(f1);
         gdbOutput = new JEditorPane();
         debuggerComponent = new JScrollPane(gdbOutput);
         gdbOutput.setText("gdb started...");
@@ -1137,24 +980,6 @@ public class TextEditor extends javax.swing.JFrame {
 
         tabb.setTabComponentAt(tabb.getTabCount() - 1, pnlTab);
 
-        int lineNumber = 0;
-        String pathOfSource = "";
-        for (int i = 0; i < projectSources.size(); i++) {
-            if (projectSources.get(i).get(0).equals(selectedPath)) {
-                pathOfSource = (String) projectSources.get(i).get(selectedExeIndex + 1);
-            }
-        }
-        if (selectedPath == null) {
-            pathOfSource = allCFiles.get(selectedExeIndex);
-        }
-        //System.out.println("Debugging file : [" + pathOfSource+"]");
-
-        String exceFileTemp = pathOfSource;
-        gdb = new ProcessCom();
-        File f1 = new File(pathOfSource + ".c");
-        System.out.println("Debugging file : [" + f1.getAbsolutePath() + "]");
-        System.out.println("Name: " + f1.getName());
-        openFile(f1);
         gdb.executeCommand("gdb " + exceFileTemp);
         gdbOutput.setText(gdbOutput.getText() + "\n" + gdb.readOutput());
         debugConfigDialog.setVisible(false);
