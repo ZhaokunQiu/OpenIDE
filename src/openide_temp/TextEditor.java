@@ -187,7 +187,7 @@ public class TextEditor extends javax.swing.JFrame {
         runIconButton.setText("Run");
         runIconButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                run();
+                ideOperation.run();
             }
         });
 
@@ -240,7 +240,7 @@ public class TextEditor extends javax.swing.JFrame {
         runIcon.setFocusPainted(false);
         runIcon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                run();
+                ideOperation.run();
             }
         });
 
@@ -539,78 +539,6 @@ public class TextEditor extends javax.swing.JFrame {
         System.out.println(line);
     }
 
-    public void run() {
-        System.out.println("Running file...");
-        ideOperation.save();
-        int selIndex = tabb.getSelectedIndex();
-        JPanel p = (JPanel) tabb.getTabComponentAt(selIndex);
-        final JLabel title1 = (JLabel) p.getComponent(0);
-        System.out.println(title1.getText());
-        if (title1.getText().equalsIgnoreCase("makefile")) {
-            System.out.println("Running a make file");
-            if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(selIndex).equals("Output"))) {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        JLabel path = (JLabel) p.getComponent(1);
-                        String filePath = path.getText();
-                        System.out.println("Makefile [" + filePath + "]");
-                        String theCommand = "";
-                        String location = filePath.substring(0, filePath.toLowerCase().indexOf("makefile") - 1);
-                        theCommand += "cd " + location + "\n";
-                        theCommand += "make uninstall" + "\n";
-                        theCommand += "make clean" + "\n";
-                        theCommand += "make" + "\n";
-                        theCommand += "make install" + "\n";
-                        theCommand += "echo 'Done building...'" + "\n";
-                        System.out.println("Saving shellscript for make at /home/castor/Desktop/scriptMake.sh");
-                        File scriptFile = new File("/home/castor/Desktop/scriptMake.sh");
-
-                        try {
-                            scriptFile.createNewFile();
-                            BufferedWriter bf = new BufferedWriter(new FileWriter(scriptFile));
-                            bf.write(theCommand);
-                            bf.close();
-                        } catch (IOException ex) {
-                            // Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-
-                        Thread t = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                System.out.println("Ready to run make");
-                                String arr[] = {"xterm", "-hold", "-e", "sh", "/home/castor/Desktop/scriptMake.sh"};
-                                System.out.println("Make executed successfully");
-                                comand.Execute(arr);
-                            }
-                        });
-                        t.start();
-                    }
-                });
-                t.start();
-            }
-        } else {
-            //compiling file
-            JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
-            JLabel lbl = (JLabel) pnl.getComponent(3);
-            if (lbl.getText().compareTo("true") != 0) {
-                ideOperation.compile(null, null);
-            }
-            lbl = (JLabel) pnl.getComponent(5);
-            final String exe = lbl.getText();
-            System.out.println("File compiled successfully");
-            Thread t1 = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("Ready to run exe");
-                    String arr[] = {"xterm", "-hold", "-e", exe};
-                    comand.Execute(arr);
-                }
-            });
-            t1.start();
-        }
-    }
-
     public void open() {
         File fileToOpen = null;
         JFileChooser fileChooser = new JFileChooser();
@@ -883,7 +811,6 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JButton compileIcon;
     private javax.swing.JMenuItem copy;
     private javax.swing.JPanel covePanel;
-    private javax.swing.GroupLayout buttonRibbonLayout;
     private javax.swing.JMenuItem cut;
     private javax.swing.JMenuItem documentation;
     private javax.swing.JMenuItem exitMenu;
@@ -922,7 +849,6 @@ public class TextEditor extends javax.swing.JFrame {
     public GridBagConstraints gridBag;
     private JDialog debugConfigDialog;
     private JButton stepUp;
-    //private JButton stepDown;
     private JButton stop;
     private JEditorPane editor;
     private JTextField printValue;
@@ -930,6 +856,5 @@ public class TextEditor extends javax.swing.JFrame {
     private ProcessCom gdb;
     private JEditorPane gdbOutput;
     private JScrollPane debuggerComponent;
-    private JDialog runConfigDialog;
     private Logger IDELogger;
 }

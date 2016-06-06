@@ -12,6 +12,7 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -390,5 +391,77 @@ public class IDEOperation {
             //revalidate();
         }
         return editor;
+    }
+    
+        public void run() {
+        System.out.println("Running file...");
+        save();
+        int selIndex = tabb.getSelectedIndex();
+        JPanel p = (JPanel) tabb.getTabComponentAt(selIndex);
+        final JLabel title1 = (JLabel) p.getComponent(0);
+        System.out.println(title1.getText());
+        if (title1.getText().equalsIgnoreCase("makefile")) {
+            System.out.println("Running a make file");
+            if (!(tabb.getComponentCount() == 0 || tabb.getTitleAt(selIndex).equals("Output"))) {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        JLabel path = (JLabel) p.getComponent(1);
+                        String filePath = path.getText();
+                        System.out.println("Makefile [" + filePath + "]");
+                        String theCommand = "";
+                        String location = filePath.substring(0, filePath.toLowerCase().indexOf("makefile") - 1);
+                        theCommand += "cd " + location + "\n";
+                        theCommand += "make uninstall" + "\n";
+                        theCommand += "make clean" + "\n";
+                        theCommand += "make" + "\n";
+                        theCommand += "make install" + "\n";
+                        theCommand += "echo 'Done building...'" + "\n";
+                        System.out.println("Saving shellscript for make at /home/castor/Desktop/scriptMake.sh");
+                        File scriptFile = new File("/home/castor/Desktop/scriptMake.sh");
+
+                        try {
+                            scriptFile.createNewFile();
+                            BufferedWriter bf = new BufferedWriter(new FileWriter(scriptFile));
+                            bf.write(theCommand);
+                            bf.close();
+                        } catch (IOException ex) {
+                            // Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+
+                        Thread t = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                System.out.println("Ready to run make");
+                                String arr[] = {"xterm", "-hold", "-e", "sh", "/home/castor/Desktop/scriptMake.sh"};
+                                System.out.println("Make executed successfully");
+                                comand.Execute(arr);
+                            }
+                        });
+                        t.start();
+                    }
+                });
+                t.start();
+            }
+        } else {
+            //compiling file
+            JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
+            JLabel lbl = (JLabel) pnl.getComponent(3);
+            if (lbl.getText().compareTo("true") != 0) {
+                compile(null, null);
+            }
+            lbl = (JLabel) pnl.getComponent(5);
+            final String exe = lbl.getText();
+            System.out.println("File compiled successfully");
+            Thread t1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Ready to run exe");
+                    String arr[] = {"xterm", "-hold", "-e", exe};
+                    comand.Execute(arr);
+                }
+            });
+            t1.start();
+        }
     }
 }
