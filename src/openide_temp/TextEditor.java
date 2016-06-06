@@ -6,7 +6,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -14,22 +13,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.logging.Level;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -46,12 +34,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.JViewport;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -453,7 +438,8 @@ public class TextEditor extends javax.swing.JFrame {
         runConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                runConfiguration();
+                //runConfiguration();
+                new RunConfiguration(projectExes, allExes, comand);
             }
 
         });
@@ -651,141 +637,6 @@ public class TextEditor extends javax.swing.JFrame {
         } catch (BadLocationException ex) {
             // Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    private void runConfiguration() {
-        System.out.println("Run configuration started");
-        runConfigDialog = new JDialog();
-        Dimension dim = new Dimension(350, 380);
-        Dimension dimPre = new Dimension(700, 700);
-        runConfigDialog.setMinimumSize(dim);
-        runConfigDialog.setPreferredSize(dimPre);
-        runConfigDialog.setTitle("Run Configuration");
-        JPanel runConfigPanel = new JPanel();
-        JTextField args = new JTextField();
-        JScrollPane scrolBar = new JScrollPane();
-        runConfigPanel.setLayout(new GridBagLayout());
-        runConfigDialog.add(runConfigPanel);
-        JLabel project = new JLabel("Project Location: ");
-        JLabel arg = new JLabel("Arguments: ");
-        JComboBox projectLoc = new JComboBox();
-        projectLoc.addItem("All local files");
-        for (int i = 0; i < projectExes.size(); i++) {
-            projectLoc.addItem(projectExes.get(i).get(0));
-        }
-        DefaultListModel allLocs = new DefaultListModel();
-        for (int i = 0; i < allExes.size(); i++) {
-            allLocs.addElement(allExes.get(i));
-        }
-        projectLoc.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    String path = (String) e.getItem();
-                    selectedPath = path;
-                    //System.out.println("state changed: " + path);
-                    //get the arrayList
-                    if (path.compareTo("All local files") == 0) {
-                        allLocs.removeAllElements();
-                        for (int i = 0; i < allExes.size(); i++) {
-                            allLocs.addElement(allExes.get(i));
-                        }
-
-                    } else {
-                        for (int i = 0; i < projectExes.size(); i++) {
-                            if (path.equals(projectExes.get(i).get(0))) {
-                                // System.out.println("Found equal: " + projectExes.get(i).get(0));
-                                allLocs.removeAllElements();
-                                for (int j = 0; j < allExes.size(); j++) {
-                                    allLocs.addElement(allExes.get(j));
-                                }
-                                ArrayList<String> temp = projectExes.get(i);
-                                for (int j = 1; j < temp.size(); j++) {
-                                    allLocs.addElement(temp.get(j).substring(temp.get(j).lastIndexOf('/') + 1, temp.get(j).length()));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        JList listOfExe = new JList(allLocs);
-        listOfExe.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                JList list = (JList) e.getSource();
-                selectedExeIndex = list.getSelectedIndex();
-            }
-        });
-        scrolBar.getViewport().add(listOfExe);
-        JButton submit = new JButton("Run");
-        submit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //System.out.println("Add here code...");
-                Thread t1 = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String exceFile = "";
-                        String parameters = args.getText();
-                        StringTokenizer st1 = new StringTokenizer(parameters);
-                        int count = st1.countTokens();
-                        count += 4;
-                        String[] ar = new String[count];
-                        ar[0] = "xterm";
-                        ar[1] = "-hold";
-                        ar[2] = "-e";
-                        //wron
-                        for (int i = 0; i < projectExes.size(); i++) {
-                            if (projectExes.get(i).get(0).equals(selectedPath)) {
-                                exceFile = (String) projectExes.get(i).get(selectedExeIndex + 1);
-                            }
-                        }
-                        System.out.println("Running file [" + exceFile + "]");
-                        ar[3] = exceFile;
-                        int i = 4;
-                        while (st1.hasMoreTokens()) {
-                            ar[i] = st1.nextToken();
-                            i++;
-                        }
-                        comand.Execute(ar);
-
-                    }
-                });
-                t1.start();
-                runConfigDialog.setVisible(false);
-
-            }
-
-        });
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        runConfigPanel.add(project, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        runConfigPanel.add(projectLoc, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        runConfigPanel.add(scrolBar, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        runConfigPanel.add(arg, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        //gbc.weightx = 1;
-        //gbc.weighty = 1;
-        runConfigPanel.add(args, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        runConfigPanel.add(submit, gbc);
-        runConfigDialog.setVisible(true);
-
     }
 
     private void Debug() {
