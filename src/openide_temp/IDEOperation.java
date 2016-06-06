@@ -34,7 +34,7 @@ import static openide_temp.TextEditor.OutputPanel;
  *
  * @author castor
  */
-public class SaveFile {
+public class IDEOperation {
 
     private JTabbedPane tabb;
     private ArrayList<String> allCFiles, allExes;
@@ -42,7 +42,7 @@ public class SaveFile {
     private JLabel statusMsg;
     private JEditorPane editor;
 
-    SaveFile(JTabbedPane tab, ArrayList allC, ExecuteShellComand cmd, ArrayList allE, JLabel msg) {
+    IDEOperation(JTabbedPane tab, ArrayList allC, ExecuteShellComand cmd, ArrayList allE, JLabel msg) {
         tabb = tab;
         allCFiles = allC;
         comand = cmd;
@@ -108,7 +108,7 @@ public class SaveFile {
                         lbl.setText(outtemp);
                         lbl = (JLabel) pnl.getComponent(5);
                         lbl.setText(exceFileTemp);
-                        
+
                     } else {
                         //Adding output panel
                         System.out.println("Error: file compiled with one or more errors");
@@ -198,7 +198,7 @@ public class SaveFile {
 
         }
     }
-    
+
     public JEditorPane openFile(File f) {
         String PathTemp = f.getAbsolutePath();
         System.out.println("Checking if file [" + PathTemp + "] is open");
@@ -206,19 +206,22 @@ public class SaveFile {
         int loc = 0;
 
         for (int i = 0; i < tabb.getComponentCount() - 1; i++) {
-            JPanel panel = (JPanel) tabb.getTabComponentAt(i);
-            JLabel p = (JLabel) panel.getComponent(1);
-            String pathText = p.getText();
-            if(pathText.charAt(0) == '*'){
-                pathText = pathText.substring(1);
-            }           
-            if (PathTemp.compareTo(pathText) == 0) {
-                fileOpen = true;
-                loc = i;
-                JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
-                JViewport viewport = s.getViewport();
-                editor = (JEditorPane) viewport.getView();
-                System.out.println("Editor: "+editor.toString());
+            
+                JPanel panel = (JPanel) tabb.getTabComponentAt(i);
+                if (panel.getComponentCount() > 2) {
+                JLabel p = (JLabel) panel.getComponent(1);
+                String pathText = p.getText();
+                if (pathText.charAt(0) == '*') {
+                    pathText = pathText.substring(1);
+                }
+                if (PathTemp.compareTo(pathText) == 0) {
+                    fileOpen = true;
+                    loc = i;
+                    JScrollPane s = (JScrollPane) tabb.getComponentAt(i);
+                    JViewport viewport = s.getViewport();
+                    editor = (JEditorPane) viewport.getView();
+                    System.out.println("Editor: " + editor.toString());
+                }
             }
         }
         if (fileOpen) {

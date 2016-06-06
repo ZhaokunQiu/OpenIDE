@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -69,7 +70,7 @@ public class TextEditor extends javax.swing.JFrame {
     public ArrayList<String> allExes, allCFiles;
     public ArrayList<ArrayList> projectExes, projectSources;
     public ProjectTree projectTreeObj;
-    public SaveFile savefile;
+    public IDEOperation ideOperation;
 
     public TextEditor() {
         try {
@@ -96,7 +97,8 @@ public class TextEditor extends javax.swing.JFrame {
 
         CSyntaxKit.initKit();
         initComponents();
-        savefile = new SaveFile(tabb, allCFiles, comand, allExes, statusMsg);
+        ideOperation = new IDEOperation(tabb, allCFiles, comand, allExes, statusMsg);
+        projectTreeObj.setOperations(ideOperation);
 
     }
 
@@ -143,7 +145,6 @@ public class TextEditor extends javax.swing.JFrame {
         runConfig = new JMenuItem();
         debugConfig = new JMenuItem();
         stepUp = new JButton();
-        stepDown = new JButton();
         stop = new JButton();
         printValue = new JTextField();
         printBtn = new JButton("Value");
@@ -236,7 +237,7 @@ public class TextEditor extends javax.swing.JFrame {
         saveIcon.setFocusPainted(false);
         saveIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                savefile.save();
+                ideOperation.save();
             }
         });
 
@@ -245,7 +246,7 @@ public class TextEditor extends javax.swing.JFrame {
         compileIcon.setFocusPainted(false);
         compileIcon.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                savefile.compile(null, null);
+                ideOperation.compile(null, null);
             }
         });
 
@@ -269,23 +270,23 @@ public class TextEditor extends javax.swing.JFrame {
             }
 
         });
-        stepDown.setIcon(new ImageIcon(getClass().getResource("/resources/prev.png")));
-        stepDown.setBorderPainted(false);
-        stepDown.setFocusPainted(false);
-        stepDown.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-            }
-
-        });
+       
         stop.setIcon(new ImageIcon(getClass().getResource("/resources/stop.png")));
         stop.setBorderPainted(false);
         stop.setFocusPainted(false);
         stop.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                System.out.println("Shutting down debugger..");
+                //buttonRibbon.re
+                buttonRibbon.remove(stepUp);
+                buttonRibbon.remove(stop);
+                buttonRibbon.remove(printValue);
+                buttonRibbon.remove(printBtn);
+                System.out.println("Debugger shut down successfully");
+                editor.getHighlighter().removeAllHighlights();
+                debugConfig.setEnabled(true);
+                repaint();
             }
         });
 
@@ -303,45 +304,18 @@ public class TextEditor extends javax.swing.JFrame {
             }
         });
 
-        buttonRibbonLayout = new javax.swing.GroupLayout(buttonRibbon);
-        buttonRibbon.setLayout(buttonRibbonLayout);
-        buttonRibbonLayout.setHorizontalGroup(
-                buttonRibbonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(buttonRibbonLayout.createSequentialGroup()
-                        .addComponent(newIcon)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(openIcon)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(saveIcon)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(runIcon)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(compileIcon)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(stepDown)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(stepUp)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(stop)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(printValue)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(printBtn)
-                        .addGap(0, 415, Short.MAX_VALUE))
-        );
-        buttonRibbonLayout.setVerticalGroup(
-                buttonRibbonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(newIcon)
-                .addComponent(openIcon)
-                .addComponent(saveIcon)
-                .addComponent(runIcon)
-                .addComponent(compileIcon)
-                .addComponent(stepDown)
-                .addComponent(stepUp)
-                .addComponent(stop)
-                .addComponent(printValue)
-                .addComponent(printBtn)
-        );
+        buttonRibbon.setLayout(new BoxLayout(buttonRibbon, BoxLayout.X_AXIS));
+        newIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonRibbon.add(newIcon);
+        openIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonRibbon.add(openIcon);
+        saveIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonRibbon.add(saveIcon);
+        runIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonRibbon.add(runIcon);
+        compileIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonRibbon.add(compileIcon);
+        
         BorderLayout coveLay = new BorderLayout();
         covePanel.setLayout(coveLay);
         covePanel.add(buttonRibbon, coveLay.NORTH);
@@ -365,6 +339,7 @@ public class TextEditor extends javax.swing.JFrame {
         gridBag.weighty = 1.0;
         gridBag.anchor = GridBagConstraints.NORTHWEST;
         projectTreeObj = new ProjectTree(projectSources, projectExes, gridBag, projectDisplay);
+        
         projectDisplay.add(new JTree(projectTreeObj.addNodes(null, new File("."), new ArrayList(), new ArrayList())), gridBag);
 
         //projectDisplay.add(new JLabel("Open Projects"));
@@ -391,7 +366,7 @@ public class TextEditor extends javax.swing.JFrame {
         save.setText("Save");
         save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                savefile.save();
+                ideOperation.save();
             }
         });
         fileMenu.add(save);
@@ -464,7 +439,7 @@ public class TextEditor extends javax.swing.JFrame {
         compile.setText("Compile");
         compile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                savefile.compile(null, null);
+                ideOperation.compile(null, null);
             }
         });
         projectMenu.add(compile);
@@ -547,7 +522,7 @@ public class TextEditor extends javax.swing.JFrame {
             if (!fileToSave.exists()) {
                 try {
                     fileToSave.createNewFile();
-                    savefile.openFile(fileToSave);
+                    ideOperation.openFile(fileToSave);
                 } catch (IOException ex) {
                     //Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -580,7 +555,7 @@ public class TextEditor extends javax.swing.JFrame {
 
     public void run() {
         System.out.println("Running file...");
-        savefile.save();
+        ideOperation.save();
         int selIndex = tabb.getSelectedIndex();
         JPanel p = (JPanel) tabb.getTabComponentAt(selIndex);
         final JLabel title1 = (JLabel) p.getComponent(0);
@@ -633,7 +608,7 @@ public class TextEditor extends javax.swing.JFrame {
             JPanel pnl = (JPanel) tabb.getTabComponentAt(tabb.getSelectedIndex());
             JLabel lbl = (JLabel) pnl.getComponent(3);
             if (lbl.getText().compareTo("true") != 0) {
-                savefile.compile(null, null);
+                ideOperation.compile(null, null);
             }
             lbl = (JLabel) pnl.getComponent(5);
             final String exe = lbl.getText();
@@ -649,7 +624,7 @@ public class TextEditor extends javax.swing.JFrame {
             t1.start();
         }
     }
-    
+
     public void open() {
         File fileToOpen = null;
         JFileChooser fileChooser = new JFileChooser();
@@ -657,7 +632,7 @@ public class TextEditor extends javax.swing.JFrame {
         int userSelection = fileChooser.showSaveDialog(this);
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             fileToOpen = fileChooser.getSelectedFile();
-            savefile.openFile(fileToOpen);
+            ideOperation.openFile(fileToOpen);
             //isOpen(fileToOpen,fileToOpen.getName());
         }
     }
@@ -780,6 +755,7 @@ public class TextEditor extends javax.swing.JFrame {
                 });
                 t1.start();
                 runConfigDialog.setVisible(false);
+
             }
 
         });
@@ -945,7 +921,7 @@ public class TextEditor extends javax.swing.JFrame {
         File f1 = new File(pathOfSource + ".c");
         System.out.println("Debugging file : [" + f1.getAbsolutePath() + "]");
         System.out.println("Name: " + f1.getName());
-        editor = savefile.openFile(f1);
+        editor = ideOperation.openFile(f1);
         gdbOutput = new JEditorPane();
         debuggerComponent = new JScrollPane(gdbOutput);
         gdbOutput.setText("gdb started...");
@@ -983,6 +959,14 @@ public class TextEditor extends javax.swing.JFrame {
         gdb.executeCommand("gdb " + exceFileTemp);
         gdbOutput.setText(gdbOutput.getText() + "\n" + gdb.readOutput());
         debugConfigDialog.setVisible(false);
+        stop.setAlignmentX(Component.LEFT_ALIGNMENT);
+        printValue.setAlignmentX(Component.LEFT_ALIGNMENT);
+        printBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonRibbon.add(stepUp);
+        buttonRibbon.add(stop);
+        buttonRibbon.add(printValue);
+        buttonRibbon.add(printBtn);
+        repaint();
         if (lineNo.getText().equalsIgnoreCase("")) {
             System.out.println("No line number provide");
             gdb.executeCommand("b main");
@@ -1007,6 +991,7 @@ public class TextEditor extends javax.swing.JFrame {
         gdbOutput.setText(gdbOutput.getText() + "\n" + output);
         System.out.println("$" + output);
         hightLightLine(editor, lineNumber);
+        debugConfig.setEnabled(false);
     }
 
     public static void main(String args[]) {
@@ -1086,7 +1071,7 @@ public class TextEditor extends javax.swing.JFrame {
     public GridBagConstraints gridBag;
     private JDialog debugConfigDialog;
     private JButton stepUp;
-    private JButton stepDown;
+    //private JButton stepDown;
     private JButton stop;
     private JEditorPane editor;
     private JTextField printValue;

@@ -30,7 +30,8 @@ public class ProjectTree extends JFrame{
     private final ArrayList<ArrayList> projectSources,projectExes;
     private GridBagConstraints gridBag;
     private JPanel projectDisplay;
-           
+    private IDEOperation operations;       
+    
     
     ProjectTree(ArrayList<ArrayList> ps,ArrayList<ArrayList> pe, GridBagConstraints gl,JPanel panel){
         projectSources = ps;
@@ -38,6 +39,10 @@ public class ProjectTree extends JFrame{
         System.out.println(projectExes.toString());
         gridBag = gl;
         projectDisplay = panel;
+    }                   
+
+    public void setOperations(IDEOperation operations) {
+        this.operations = operations;
     }
     
     DefaultMutableTreeNode addNodes(DefaultMutableTreeNode curTop, File dir, ArrayList<String> tempExes, ArrayList<String> tempSource) {
@@ -117,7 +122,7 @@ public class ProjectTree extends JFrame{
                             System.out.println(fPath);
                             File f = new File(fPath);
                             if (f.isFile()) {
-                                //openFile(new File(fPath));
+                                operations.openFile(new File(fPath));
                             }
 
                         }
