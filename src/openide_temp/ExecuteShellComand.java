@@ -33,6 +33,7 @@ public class ExecuteShellComand {
                 if (line == null) {
                     break;
                 }
+                displayOutput(line);
                 //System.out.println(line);
                 s = s + line;
                 s = s + "\n";

@@ -17,12 +17,21 @@ import javax.swing.text.Element;
  * @author castor
  */
 public class Highlighter {
+
+    public DefaultHighlighter.DefaultHighlightPainter getHighlightPainter() {
+        return highlightPainter;
+    }
+        Color color;
+        DefaultHighlighter.DefaultHighlightPainter highlightPainter;
+        Highlighter(){
+            color = Color.yellow;
+        }
        protected void hightLightLine(JEditorPane edit, int lineNo) {
         edit.setCaretPosition(PROPERTIES);
         edit.getHighlighter().removeAllHighlights();
-        DefaultHighlighter.DefaultHighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+         highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(color);
         Element root = edit.getDocument().getDefaultRootElement();
-
+        
         int startOfLineOffset = root.getElement(lineNo - 1).getStartOffset();
         int stopOfLineOffset = root.getElement(lineNo).getStartOffset();
         edit.setCaretPosition(startOfLineOffset);
@@ -32,5 +41,9 @@ public class Highlighter {
             // Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+       
+       protected void changeColor(Color color){
+           this.color = color;
+       }
 
 }

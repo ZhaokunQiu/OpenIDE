@@ -30,6 +30,7 @@ import javax.swing.JViewport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import static openide_temp.TextEditor.OutputPanel;
+import static openide_temp.TextEditor.compiledIndex;
 
 /**
  *
@@ -52,6 +53,7 @@ public class IDEOperation {
     }
 
     public void compile(String source, String outfile) {
+        compiledIndex = tabb.getSelectedIndex();
         String exceFile = "";
         boolean compileFile = true;
         System.out.println("Compiling...");
@@ -207,7 +209,6 @@ public class IDEOperation {
         int loc = 0;
 
         for (int i = 0; i < tabb.getComponentCount() - 1; i++) {
-            
                 JPanel panel = (JPanel) tabb.getTabComponentAt(i);
                 if (panel.getComponentCount() > 2) {
                 JLabel p = (JLabel) panel.getComponent(1);

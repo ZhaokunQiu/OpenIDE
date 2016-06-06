@@ -5,43 +5,26 @@ import org.slf4j.LoggerFactory;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Element;
 import jsyntaxpane.syntaxkits.CSyntaxKit;
 
 public class TextEditor extends javax.swing.JFrame {
@@ -90,8 +73,6 @@ public class TextEditor extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     private void initComponents() {
 
-        warningText = new javax.swing.JLabel();
-        warningCancelBtn = new javax.swing.JButton();
         runIconButton = new javax.swing.JButton();
         covePanel = new javax.swing.JPanel();
         buttonRibbon = new javax.swing.JPanel();
@@ -190,7 +171,6 @@ public class TextEditor extends javax.swing.JFrame {
             }
         });
 
-       
         buttonRibbon.setLayout(new BoxLayout(buttonRibbon, BoxLayout.X_AXIS));
         newIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
         buttonRibbon.add(newIcon);
@@ -421,11 +401,15 @@ public class TextEditor extends javax.swing.JFrame {
     public static void displayOutput(String line) {
         JLabel lab = new JLabel();
         if (line.contains("error") || line.contains("warning")) {
-
+            System.out.println("error: " + line);
             link = new JLabel();
             link.addMouseListener(new ErrorLoctionListener(tabb));
             link.setForeground(Color.blue);
+            link.setCursor(new Cursor(Cursor.HAND_CURSOR));
             int index = line.indexOf("error");
+            if (index == -1) {
+                index = line.indexOf("warning");
+            }
             String btn = line.substring(0, index);
             String txt = line.substring(index);
             link.setText(btn);
@@ -447,10 +431,9 @@ public class TextEditor extends javax.swing.JFrame {
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             fileToOpen = fileChooser.getSelectedFile();
             ideOperation.openFile(fileToOpen);
-            //isOpen(fileToOpen,fileToOpen.getName());
         }
-    }  
- 
+    }
+
     public static void main(String args[]) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -496,17 +479,13 @@ public class TextEditor extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem find;
     private javax.swing.JMenu helpMenu;
-    private javax.swing.JButton warningCancelBtn;
     private javax.swing.JButton runIconButton;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar menuOptions;
-    //private javax.swing.JPanel warningPanel;
     private javax.swing.JMenuItem newFile;
     private javax.swing.JButton newIcon;
     private javax.swing.JMenuItem open;
     private javax.swing.JButton openIcon;
-    //private javax.swing.JDialog warningDialog;
-    private javax.swing.JLabel warningText;
     private javax.swing.JMenuItem paste;
     private javax.swing.JMenu projectMenu;
     private javax.swing.JMenuItem redo;
