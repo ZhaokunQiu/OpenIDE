@@ -46,7 +46,7 @@ import jsyntaxpane.syntaxkits.CSyntaxKit;
 
 public class TextEditor extends javax.swing.JFrame {
 
-    public boolean projectTreeVisable = true, resize = false;
+    public boolean projectTreeVisable = true, resize = false,paint = false;
     public String output, selectedPath;
     public static JPanel OutputPanel;
     public ExecuteShellComand comand;
@@ -129,11 +129,6 @@ public class TextEditor extends javax.swing.JFrame {
         projectDisplay = new JPanel();
         runConfig = new JMenuItem();
         debugConfig = new JMenuItem();
-        stepUp = new JButton();
-        stop = new JButton();
-        printValue = new JTextField();
-        printBtn = new JButton("Value");
-
 
         /* Opening a waring dialog when user tries to create a new file which is already present */
         warningDialog.setMinimumSize(new java.awt.Dimension(177, 97));
@@ -244,51 +239,7 @@ public class TextEditor extends javax.swing.JFrame {
             }
         });
 
-        stepUp.setIcon(new ImageIcon(getClass().getResource("/resources/next.png")));
-        stepUp.setBorderPainted(false);
-        stepUp.setFocusPainted(false);
-        stepUp.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //adding gdb next code here
-                debugNext();
-            }
-
-        });
        
-        stop.setIcon(new ImageIcon(getClass().getResource("/resources/stop.png")));
-        stop.setBorderPainted(false);
-        stop.setFocusPainted(false);
-        stop.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.out.println("Shutting down debugger..");
-                //buttonRibbon.re
-                buttonRibbon.remove(stepUp);
-                buttonRibbon.remove(stop);
-                buttonRibbon.remove(printValue);
-                buttonRibbon.remove(printBtn);
-                System.out.println("Debugger shut down successfully");
-                editor.getHighlighter().removeAllHighlights();
-                debugConfig.setEnabled(true);
-                repaint();
-            }
-        });
-
-        printValue.setColumns(5);
-        printValue.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String cmd = printValue.getText();
-                gdb.executeCommand(cmd);
-                String output = gdb.readOutput();
-                //System.out.println(output);
-                gdbOutput.setText(gdbOutput.getText() + "\n"
-                        + cmd + " " + output);
-                tabb.setSelectedComponent(debuggerComponent);
-            }
-        });
-
         buttonRibbon.setLayout(new BoxLayout(buttonRibbon, BoxLayout.X_AXIS));
         newIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
         buttonRibbon.add(newIcon);
@@ -300,7 +251,7 @@ public class TextEditor extends javax.swing.JFrame {
         buttonRibbon.add(runIcon);
         compileIcon.setAlignmentX(Component.LEFT_ALIGNMENT);
         buttonRibbon.add(compileIcon);
-        
+
         BorderLayout coveLay = new BorderLayout();
         covePanel.setLayout(coveLay);
         covePanel.add(buttonRibbon, coveLay.NORTH);
@@ -324,7 +275,7 @@ public class TextEditor extends javax.swing.JFrame {
         gridBag.weighty = 1.0;
         gridBag.anchor = GridBagConstraints.NORTHWEST;
         projectTreeObj = new ProjectTree(projectSources, projectExes, gridBag, projectDisplay);
-        
+
         projectDisplay.add(new JTree(projectTreeObj.addNodes(null, new File("."), new ArrayList(), new ArrayList())), gridBag);
 
         //projectDisplay.add(new JLabel("Open Projects"));
@@ -451,7 +402,7 @@ public class TextEditor extends javax.swing.JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //Debug debug = new Debug(projectSources, allCFiles, buttonRibbonLayout, stepUp, stepDown, stop);
-                Debug();
+                debug = new Debugger(projectSources, allCFiles, buttonRibbon, tabb, ideOperation, debugConfig);
             }
 
         });
@@ -549,230 +500,8 @@ public class TextEditor extends javax.swing.JFrame {
             ideOperation.openFile(fileToOpen);
             //isOpen(fileToOpen,fileToOpen.getName());
         }
-    }
-
-    private void hightLightLine(JEditorPane edit, int lineNo) {
-        edit.setCaretPosition(PROPERTIES);
-        edit.getHighlighter().removeAllHighlights();
-        DefaultHighlighter.DefaultHighlightPainter highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
-        Element root = edit.getDocument().getDefaultRootElement();
-
-        int startOfLineOffset = root.getElement(lineNo - 1).getStartOffset();
-        int stopOfLineOffset = root.getElement(lineNo).getStartOffset();
-        edit.setCaretPosition(startOfLineOffset);
-        try {
-            edit.getHighlighter().addHighlight(startOfLineOffset, stopOfLineOffset, highlightPainter);
-        } catch (BadLocationException ex) {
-            // Logger.getLogger(TextEditor.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void Debug() {
-        System.out.println("Starting Debug configuration..");
-        debugConfigDialog = new JDialog();
-        Dimension dim = new Dimension(400, 380);
-        Dimension dimPre = new Dimension(700, 700);
-        //runConfigDialog.setMaximumSize(dim);
-        debugConfigDialog.setMinimumSize(dim);
-        debugConfigDialog.setPreferredSize(dimPre);
-        debugConfigDialog.setTitle("Debug Configuration");
-        JPanel runConfigPanel = new JPanel();
-        JTextField lineNo = new JTextField();
-        JScrollPane scrolBar = new JScrollPane();
-        //BoxLayout bx = new BoxLayout(runConfigPanel,BoxLayout.Y_AXIS);
-        runConfigPanel.setLayout(new GridBagLayout());
-        debugConfigDialog.add(runConfigPanel);
-        JLabel project = new JLabel("Project Location: ");
-        JLabel arg = new JLabel("Line Number: ");
-        JComboBox projectLoc = new JComboBox();
-        projectLoc.addItem("Local source files");
-        for (int i = 0; i < projectSources.size(); i++) {
-            projectLoc.addItem(projectSources.get(i).get(0));
-        }
-        DefaultListModel allLocs = new DefaultListModel();
-        for (int i = 0; i < allCFiles.size(); i++) {
-            allLocs.addElement(allCFiles.get(i));
-        }
-        projectLoc.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    String path = (String) e.getItem();
-                    selectedPath = path;
-                    //System.out.println("state changed: " + path);
-                    //get the arrayList
-                    if (path.compareTo("Local source files") == 0) {
-                        allLocs.removeAllElements();
-                        for (int i = 0; i < allCFiles.size(); i++) {
-                            allLocs.addElement(allCFiles.get(i));
-                        }
-                    } else {
-                        for (int i = 0; i < projectSources.size(); i++) {
-                            if (path.equals(projectSources.get(i).get(0))) {
-                                //System.out.println("Found equal: " + projectSources.get(i).get(0));
-                                allLocs.removeAllElements();
-                                /*for (int j = 0; j < allExes.size(); j++) {
-                                    allLocs.addElement(allExes.get(j));
-                                }*/
-                                ArrayList<String> temp = projectSources.get(i);
-                                for (int j = 1; j < temp.size(); j++) {
-                                    allLocs.addElement(temp.get(j).substring(temp.get(j).lastIndexOf('/') + 1, temp.get(j).length()));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        JList listOfExe = new JList(allLocs);
-        listOfExe.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                JList list = (JList) e.getSource();
-                selectedExeIndex = list.getSelectedIndex();
-            }
-        });
-        scrolBar.getViewport().add(listOfExe);
-        JButton submit = new JButton("Debug");
-        submit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                debug(projectSources, lineNo);
-            }
-        });
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        runConfigPanel.add(project, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        runConfigPanel.add(projectLoc, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        runConfigPanel.add(scrolBar, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        runConfigPanel.add(arg, gbc);
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        //gbc.weightx = 1;
-        //gbc.weighty = 1;
-        runConfigPanel.add(lineNo, gbc);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        runConfigPanel.add(submit, gbc);
-        debugConfigDialog.setVisible(true);
-
-    }
-
-    private void debugNext() {
-        gdb.executeCommand("next");
-        System.out.println(gdb.readOutput());
-        gdb.executeCommand("where");
-        String output = gdb.readOutput();
-        gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-
-        output = output.substring(output.lastIndexOf(":") + 1, output.length() - 1);
-        System.out.println("line next: " + output);
-        hightLightLine(editor, Integer.parseInt(output));
-
-    }
-
-    private void debug(ArrayList<ArrayList> projectSources, JTextField lineNo) {
-        int lineNumber = 0;
-        String pathOfSource = "";
-        for (int i = 0; i < projectSources.size(); i++) {
-            if (projectSources.get(i).get(0).equals(selectedPath)) {
-                pathOfSource = (String) projectSources.get(i).get(selectedExeIndex + 1);
-            }
-        }
-        if (selectedPath == null) {
-            pathOfSource = allCFiles.get(selectedExeIndex);
-        }
-        //System.out.println("Debugging file : [" + pathOfSource+"]");
-
-        String exceFileTemp = pathOfSource;
-        gdb = new ProcessCom();
-        File f1 = new File(pathOfSource + ".c");
-        System.out.println("Debugging file : [" + f1.getAbsolutePath() + "]");
-        System.out.println("Name: " + f1.getName());
-        editor = ideOperation.openFile(f1);
-        gdbOutput = new JEditorPane();
-        debuggerComponent = new JScrollPane(gdbOutput);
-        gdbOutput.setText("gdb started...");
-        tabb.add(debuggerComponent);
-        JButton close = new JButton("x");
-        close.setForeground(Color.RED);
-        close.setBorderPainted(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 1;
-        JPanel pnlTab = new JPanel(new GridBagLayout());
-        pnlTab.setOpaque(false);
-        gdbOutput.setContentType("text/java");
-        gdbOutput.setEditable(false);
-        pnlTab.add(new JLabel("Debugger"), gbc);
-        gbc.gridx++;
-        gbc.weightx = 0;
-        pnlTab.add(close, gbc);
-        close.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JButton b = (JButton) e.getSource();
-                JPanel parent = (JPanel) b.getParent();
-                int i = tabb.indexOfTabComponent(parent);
-                if (i != -1) {
-                    tabb.remove(i);
-                }
-            }
-
-        });
-
-        tabb.setTabComponentAt(tabb.getTabCount() - 1, pnlTab);
-
-        gdb.executeCommand("gdb " + exceFileTemp);
-        gdbOutput.setText(gdbOutput.getText() + "\n" + gdb.readOutput());
-        debugConfigDialog.setVisible(false);
-        stop.setAlignmentX(Component.LEFT_ALIGNMENT);
-        printValue.setAlignmentX(Component.LEFT_ALIGNMENT);
-        printBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        buttonRibbon.add(stepUp);
-        buttonRibbon.add(stop);
-        buttonRibbon.add(printValue);
-        buttonRibbon.add(printBtn);
-        repaint();
-        if (lineNo.getText().equalsIgnoreCase("")) {
-            System.out.println("No line number provide");
-            gdb.executeCommand("b main");
-            String output = gdb.readOutput();
-            System.out.println("$" + output);
-            gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-            lineNumber = Integer.parseInt(output.substring(output.lastIndexOf("line") + 5, output.length() - 2));
-            System.out.println("The line number " + lineNumber);
-
-        } else {
-            System.out.println("Start on line number = " + lineNo.getText());
-            lineNumber = Integer.parseInt(lineNo.getText());
-            gdb.executeCommand("b main");
-            String output = gdb.readOutput();
-            System.out.println("$" + output);
-            gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-            System.out.println("$" + output);
-        }
-        gdb.executeCommand("run");
-        String output = gdb.readOutput();
-        System.out.println("$" + output);
-        gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-        System.out.println("$" + output);
-        hightLightLine(editor, lineNumber);
-        debugConfig.setEnabled(false);
-    }
-
+    }  
+ 
     public static void main(String args[]) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -800,7 +529,8 @@ public class TextEditor extends javax.swing.JFrame {
         }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TextEditor().setVisible(true);
+                texteditor = new TextEditor();
+                texteditor.setVisible(true);
             }
         });
     }
@@ -848,13 +578,11 @@ public class TextEditor extends javax.swing.JFrame {
     public JPanel projectDisplay;
     public GridBagConstraints gridBag;
     private JDialog debugConfigDialog;
-    private JButton stepUp;
-    private JButton stop;
     private JEditorPane editor;
-    private JTextField printValue;
-    private JButton printBtn;
     private ProcessCom gdb;
     private JEditorPane gdbOutput;
     private JScrollPane debuggerComponent;
     private Logger IDELogger;
+    private Debugger debug;
+    protected static TextEditor texteditor;
 }
