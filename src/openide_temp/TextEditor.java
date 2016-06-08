@@ -422,7 +422,7 @@ public class TextEditor extends javax.swing.JFrame {
         }
         System.out.println(line);
     }
-
+    
     public void open() {
         File fileToOpen = null;
         JFileChooser fileChooser = new JFileChooser();
