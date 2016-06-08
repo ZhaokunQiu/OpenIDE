@@ -27,7 +27,8 @@ public class ProcessCom {
     private static String outputText;
     private Scanner reader;
     private BufferedWriter writer;
-    boolean flag  = true;
+    boolean flag = true;
+    boolean inputFlag = false;
 
     ProcessCom() {
         outputText = new String();
@@ -40,6 +41,7 @@ public class ProcessCom {
 
             //reader = new BufferedReader(new InputStreamReader(stdout));
             reader = new Scanner(process.getInputStream());
+
             writer = new BufferedWriter(new OutputStreamWriter(stdin));
 
         } catch (IOException ex) {
@@ -53,21 +55,26 @@ public class ProcessCom {
     }
 
     public String readOutput() {
-       String output = "";
+        String output = "";
         String line = "";
-        while(reader.hasNext()){
+        while (reader.hasNext()) {
             line = reader.nextLine();
-            if(line.contains("castor123")){
-               // System.out.println("reading stoped");
-                break;
+            if (line.contains("castor123") || (line.contains("scanf(") && !line.contains("printf"))) {
+                if ((line.contains("scanf(") && !line.contains("printf"))) {
+                    System.out.println(line);
+                    System.out.println("Need to ask user input..");
+                    inputFlag = true;
+                } else {
+                    break;
+                }
             }
-            output += line +"\n";
+            output += line + "\n";
             //System.out.println(line);
         }
         return output;
     }
-    
-    public void executeCommand(String command){
+
+    public void executeCommand(String command) {
         System.out.println("Executed " + command);
         runCommand(command);
         runCommand("castor123#god");
@@ -83,7 +90,6 @@ public class ProcessCom {
         } catch (IOException ex) {
             Logger.getLogger(ProcessCom.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
 
     }
 

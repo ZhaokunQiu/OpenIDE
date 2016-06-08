@@ -15,8 +15,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Scanner;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -56,7 +59,7 @@ public class Debugger {
     private JTextField printValue;
     private JButton printBtn;
     private JScrollPane debuggerComponent;
-    private JMenuItem  debugConfig;
+    private JMenuItem debugConfig;
 
     public Debugger(ArrayList<ArrayList> projectSources, ArrayList<String> allCFiles, JPanel buttonRibbon, JTabbedPane tabb, IDEOperation ideOperation, JMenuItem debugConfig) {
         this.projectSources = projectSources;
@@ -215,12 +218,74 @@ public class Debugger {
     public void debugNext() {
         gdb.executeCommand("next");
         System.out.println(gdb.readOutput());
-        gdb.executeCommand("where");
-        String output = gdb.readOutput();
-        gdbOutput.setText(gdbOutput.getText() + "\n" + output);
-        output = output.substring(output.lastIndexOf(":") + 1, output.length() - 1);
-        System.out.println("line next: " + output);
-        highlighter.hightLightLine(editor, Integer.parseInt(output));
+        System.out.println("input flag value " + gdb.inputFlag);
+        if (!gdb.inputFlag) {
+            gdb.executeCommand("where");
+            String output = gdb.readOutput();
+            System.out.println("$Output: "+output);
+            gdbOutput.setText(gdbOutput.getText() + "\n" + output);
+            output = output.substring(output.lastIndexOf(":") + 1, output.length() - 1);
+            System.out.println("line next: " + output);
+            highlighter.hightLightLine(editor, Integer.parseInt(output));
+        } else {
+            //ask input
+            gdb.executeCommand("where");
+            String output = gdb.readOutput();
+            System.out.println("output: "+output);
+            gdbOutput.setText(gdbOutput.getText() + "\n" + output);
+            output = output.substring(output.lastIndexOf(":") + 1, output.length() - 1);
+            System.out.println("line next: " + output);
+            highlighter.hightLightLine(editor, Integer.parseInt(output));
+            System.out.println("Asking now..");
+            gdb.executeCommand("next");
+            Thread t = new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    System.out.println(gdb.readOutput());
+                }
+            });
+            t.start();
+            //gdb.executeCommand("next");
+            
+            tabb.setSelectedComponent(debuggerComponent);
+            gdbOutput.setText(gdbOutput.getText() + "\n" + "NOTE:  Enter all innputs inline\n");
+            gdbOutput.setEditable(true);
+            gdbOutput.addKeyListener(new KeyListener() {
+                @Override
+                public void keyTyped(KeyEvent e) {
+                    //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                        String line = null;
+                        Scanner scanner = new Scanner(gdbOutput.getText());
+                        while (scanner.hasNextLine()) {
+                            line = scanner.nextLine();
+                        }
+                        System.out.println("Input entered. : " + line);
+                        gdbOutput.setEditable(false);
+                        gdb.executeCommand(line);
+                        gdb.executeCommand("where");
+                        String output = gdb.readOutput();
+                        gdbOutput.setText(gdbOutput.getText() + "\n" + output);
+                        output = output.substring(output.lastIndexOf(":") + 1, output.length() - 1);
+                        System.out.println("line next: " + output);
+                        highlighter.hightLightLine(editor, Integer.parseInt(output));
+                        gdb.inputFlag = false;
+                    }
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                }
+
+            });
+
+        }
     }
 
     private void debug(ArrayList<ArrayList> projectSources, JTextField lineNo) {
@@ -232,9 +297,9 @@ public class Debugger {
                 pathOfSource = (String) projectSources.get(i).get(selectedExeIndex + 1);
             }
         }
-        if(selectedPath == null){
+        if (selectedPath == null) {
             pathOfSource = allCFiles.get(selectedExeIndex);
-        }else if(selectedPath.compareTo("Local source files") == 0) {
+        } else if (selectedPath.compareTo("Local source files") == 0) {
             pathOfSource = allCFiles.get(selectedExeIndex);
         }
         //System.out.println("Debugging file : [" + pathOfSource+"]");

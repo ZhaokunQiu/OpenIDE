@@ -55,7 +55,6 @@ public class ProjectTree extends JFrame{
         String[] tmp = dir.list();
         for (int i = 0; i < tmp.length; i++) {
             //System.out.println(tmp[i]);
-
             File f = new File(dir.getAbsolutePath() + "/" + tmp[i]);
             if (f.canExecute() && !tmp[i].endsWith(".o") && !f.isDirectory() && !tmp[i].contains(".")) {
                 tempExes.add(dir.getAbsolutePath() + "/./" + tmp[i]);
